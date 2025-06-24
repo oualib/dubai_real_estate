@@ -163,7 +163,7 @@ land_registry AS
         groupBitOr(is_registered) AS is_registered,
         groupArray(pre_registration_number) AS pre_registration_number,
         MAX(actual_area) AS actual_area,
-        NULL::Date AS creation_date
+        NULL::Nullable(Date) AS creation_date
     FROM "{dld_database}"."{dld_table}_staging"
     GROUP BY 1, 4, 5
 ),

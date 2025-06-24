@@ -13,7 +13,6 @@ SELECT
     activity_type_id,
     status_id,
     license_number,
-    license_type_extract,
     issue_date AS license_issue_date,
     expiry_date AS license_expiry_date,
     cancel_date AS license_cancel_date,

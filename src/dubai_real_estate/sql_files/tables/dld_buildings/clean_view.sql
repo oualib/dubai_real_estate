@@ -29,7 +29,7 @@ FROM
         NULLIFNEG(master_project_id) AS master_project_id,
         NULLIFNEG(project_id) AS project_id,
         TRIM(UPPER(building_number)) AS building_name,
-        FORMAT_INT(REGEXP_REPLACE(building_number, '[^0-9]', '')::Nullable(Integer)) AS building_number_final,
+        FORMAT_INT(REGEXP_REPLACE(building_number, '[^0-9]', '')) AS building_number_final,
         bld_levels,
         floors,
         MAP_ROOMS_REVERSE(rooms_en) AS rooms_id,

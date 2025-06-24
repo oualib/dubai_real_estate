@@ -14,6 +14,7 @@ DLD_TABLE_BUILDINGS = "dld_buildings"
 DLD_TABLE_UNITS = "dld_units"
 DLD_TABLE_OA_SERVICE_CHARGES = "dld_oa_service_charges"
 DLD_TABLE_LAND_REGISTRY = "dld_land_registry"
+DLD_TABLE_PROJECTS = "dld_projects"
 
 
 @pytest.mark.integration
@@ -156,14 +157,14 @@ DLD_TABLE_LAND_REGISTRY = "dld_land_registry"
         #     None,
         #     None,
         # ),
-        # (
-        #     DATABASE_TEST_NAME,
-        #     "dld_transactions",
-        #     None,
-        #     999999999999999,
-        #     None,
-        #     None,
-        # ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_transactions",
+            "instance_date",
+            999999999999999,
+            date(2060, 1, 1),
+            date(2060, 1, 1),
+        ),
     ],
 )
 def test_create_ingest_tables(
@@ -353,14 +354,14 @@ def test_create_ingest_tables(
         #     None,
         #     None,
         # ),
-        # (
-        #     DATABASE_TEST_NAME,
-        #     "dld_transactions",
-        #     None,
-        #     999999999999999,
-        #     None,
-        #     None,
-        # ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_transactions",
+            "instance_date",
+            999999999999999,
+            date(2060, 1, 1),
+            date(2060, 1, 1),
+        ),
     ],
 )
 def test_clean_views(
@@ -391,6 +392,7 @@ def test_clean_views(
                             units=DLD_TABLE_UNITS,
                             oa_service_charges=DLD_TABLE_OA_SERVICE_CHARGES,
                             land_registry=DLD_TABLE_LAND_REGISTRY,
+                            projects=DLD_TABLE_PROJECTS,
                         )
                     )
                     cursor.close()
