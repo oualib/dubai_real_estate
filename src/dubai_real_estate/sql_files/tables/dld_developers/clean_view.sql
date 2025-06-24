@@ -11,7 +11,6 @@ SELECT
     legal_status AS legal_status_id,
     license_source_id,
     license_type_id,
-    license_type_extract,
     license_number,
     CASE 
 		WHEN 

@@ -5,8 +5,8 @@ SELECT
 	FORMAT_VARCHAR("fz_company_name_en") AS "fz_company_name_en",
 	FORMAT_INT("license_source_id") AS "license_source_id",
 	FORMAT_VARCHAR("license_number") AS "license_number",
-	FORMAT_DATE("license_issue_date") AS "license_issue_date",
-	FORMAT_DATE("license_expiry_date") AS "license_expiry_date",
+	"license_issue_date" AS "license_issue_date",
+	"license_expiry_date" AS "license_expiry_date",
 	FORMAT_EMAIL("email") AS "email",
 	FORMAT_WEBSITE("webpage") AS "webpage",
 	FORMAT_PHONE_NUMBER("phone") AS "phone"
