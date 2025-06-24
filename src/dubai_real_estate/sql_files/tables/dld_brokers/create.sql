@@ -1,15 +1,15 @@
 CREATE OR REPLACE TABLE
 	"{dld_database}"."{dld_table}_staging"(
-		"real_estate_number" UInt64,
-		"participant_id" UInt64,
-		"broker_number" UInt32,
-		"broker_name_ar" Nullable(String),
-		"broker_name_en" Nullable(String),
-		"license_start_date" Date,
-		"license_end_date" Date,
+		"real_estate_number" Integer,
+		"participant_id" Nullable(Integer),
+		"broker_number" Nullable(Integer),
+		"broker_name_ar" Nullable(Varchar(268)),
+		"broker_name_en" Nullable(Varchar(150)),
+		"license_start_date" Nullable(Date),
+		"license_end_date" Nullable(Date),
 		"is_female" Nullable(Bool),
-		"contact" Nullable(String),
-		"phone" Nullable(UInt64)
+		"contact" Nullable(Varchar(102)),
+		"phone" Nullable(Integer)
 	) 
     ENGINE = MergeTree()
-    PRIMARY KEY("license_start_date", "license_end_date", "participant_id");
+    PRIMARY KEY("real_estate_number");
