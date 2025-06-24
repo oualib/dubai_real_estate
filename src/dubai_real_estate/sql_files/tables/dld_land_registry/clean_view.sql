@@ -70,7 +70,7 @@ FROM
             creation_date
         FROM "{dld_database}"."{units}_staging" WHERE parcel_id IS NULL
     ) AS q0
-    GROUP BY 1, 4, 5, 11, 12
+    GROUP BY ALL
 ),
 parcel_existing AS
 (
@@ -140,7 +140,7 @@ FROM
             creation_date
         FROM "{dld_database}"."{units}_staging"
     ) AS q0
-    GROUP BY 1, 4, 5, 11, 12
+    GROUP BY ALL
 ),
 land_registry AS
 (
@@ -165,7 +165,7 @@ land_registry AS
         MAX(actual_area) AS actual_area,
         NULL::Nullable(Date) AS creation_date
     FROM "{dld_database}"."{dld_table}_staging"
-    GROUP BY 1, 4, 5
+    GROUP BY ALL
 ),
 land_clean AS
 (

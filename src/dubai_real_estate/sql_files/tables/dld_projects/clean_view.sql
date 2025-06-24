@@ -80,7 +80,7 @@ SELECT
     NULL::Nullable(Integer) AS no_of_lands,
     NULL::Nullable(Integer) AS no_of_buildings,
     NULL::Nullable(Integer) AS no_of_villas,
-    no_of_units::Nullable(Integer),
+    no_of_units::Nullable(Integer) AS no_of_units,
     NULL::Nullable(Varchar) AS project_description_en,
     NULL::Nullable(Varchar) AS project_description_ar
 FROM
