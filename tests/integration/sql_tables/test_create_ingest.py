@@ -8,8 +8,10 @@ from datetime import datetime, date
 from dubai_real_estate.connection.clients import BaseConnection
 from dubai_real_estate.sql import get_function_sql, get_table_sql
 
-# TEST DB
+# GLOBAL VARIABLES
 DATABASE_TEST_NAME = "dld_test"
+DLD_TABLE_BUILDINGS = "dld_buildings"
+DLD_TABLE_UNITS = "dld_units"
 
 
 @pytest.mark.integration
@@ -70,7 +72,7 @@ DATABASE_TEST_NAME = "dld_test"
             "creation_date",
             222914,
             date(2008, 10, 14),
-            date(2060, 1, 1),
+            date(2025, 6, 12),
         ),
         (
             DATABASE_TEST_NAME,
@@ -78,7 +80,7 @@ DATABASE_TEST_NAME = "dld_test"
             "license_issue_date",
             250,
             date(1995, 10, 14),
-            date(2060, 1, 1),
+            date(2024, 12, 9),
         ),
         (
             DATABASE_TEST_NAME,
@@ -102,7 +104,7 @@ DATABASE_TEST_NAME = "dld_test"
             "request_date",
             891041,
             date(2003, 2, 11),
-            date(2060, 1, 1),
+            date(2025, 12, 6),
         ),
         (
             DATABASE_TEST_NAME,
@@ -117,14 +119,14 @@ DATABASE_TEST_NAME = "dld_test"
             "dld_offices",
             "license_issue_date",
             4935,
-            date(2060, 1, 1),
+            date(1975, 2, 19),
             date(2060, 1, 1),
         ),
         (
             DATABASE_TEST_NAME,
             "dld_projects",
             "project_start_date",
-            999999999999999,
+            2838,
             date(2060, 1, 1),
             date(2060, 1, 1),
         ),
@@ -132,7 +134,7 @@ DATABASE_TEST_NAME = "dld_test"
             DATABASE_TEST_NAME,
             "dld_real_estate_licenses",
             "issue_date",
-            999999999999999,
+            2788,
             date(2060, 1, 1),
             date(2060, 1, 1),
         ),
@@ -261,6 +263,102 @@ def test_create_ingest_tables(
             date(2008, 10, 14),
             date(2025, 5, 31),
         ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_buildings",
+            "creation_date",
+            222914,
+            date(2008, 10, 14),
+            date(2025, 6, 12),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_free_zone_companies_licensing",
+            "license_issue_date",
+            250,
+            date(1995, 10, 14),
+            date(2024, 12, 9),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_land_registry",
+            None,
+            226360,
+            None,
+            None,
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_licenced_owner_associations",
+            None,
+            104,
+            None,
+            None,
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_map_requests",
+            "request_date",
+            891041,
+            date(2003, 2, 11),
+            date(2025, 12, 6),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_oa_service_charges",
+            None,
+            91193,
+            None,
+            None,
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_offices",
+            "license_issue_date",
+            4935,
+            date(1975, 2, 19),
+            date(2060, 1, 1),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_projects",
+            "project_start_date",
+            2838,
+            date(2060, 1, 1),
+            date(2060, 1, 1),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_real_estate_licenses",
+            "issue_date",
+            2788,
+            date(2060, 1, 1),
+            date(2060, 1, 1),
+        ),
+        (
+            DATABASE_TEST_NAME,
+            "dld_real_estate_permits",
+            "start_date",
+            999999999999999,
+            date(2060, 1, 1),
+            date(2060, 1, 1),
+        ),
+        # (
+        #     DATABASE_TEST_NAME,
+        #     "dld_rent_contracts",
+        #     None,
+        #     999999999999999,
+        #     None,
+        #     None,
+        # ),
+        # (
+        #     DATABASE_TEST_NAME,
+        #     "dld_transactions",
+        #     None,
+        #     999999999999999,
+        #     None,
+        #     None,
+        # ),
     ],
 )
 def test_clean_views(
@@ -284,7 +382,12 @@ def test_clean_views(
             for func in sql.split(";"):
                 if func.strip():
                     cursor = clickhouse_connection.execute(
-                        func.strip().format(dld_database=db_name, dld_table=table_name)
+                        func.strip().format(
+                            dld_database=db_name,
+                            dld_table=table_name,
+                            buildings=DLD_TABLE_BUILDINGS,
+                            units=DLD_TABLE_UNITS,
+                        )
                     )
                     cursor.close()
 
