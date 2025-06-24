@@ -12,6 +12,8 @@ from dubai_real_estate.sql import get_function_sql, get_table_sql
 DATABASE_TEST_NAME = "dld_test"
 DLD_TABLE_BUILDINGS = "dld_buildings"
 DLD_TABLE_UNITS = "dld_units"
+DLD_TABLE_OA_SERVICE_CHARGES = "dld_oa_service_charges"
+DLD_TABLE_LAND_REGISTRY = "dld_land_registry"
 
 
 @pytest.mark.integration
@@ -120,14 +122,14 @@ DLD_TABLE_UNITS = "dld_units"
             "license_issue_date",
             4935,
             date(1975, 2, 19),
-            date(2060, 1, 1),
+            date(2023, 9, 26),
         ),
         (
             DATABASE_TEST_NAME,
             "dld_projects",
             "project_start_date",
             2838,
-            date(2060, 1, 1),
+            date(2000, 1, 1),
             date(2060, 1, 1),
         ),
         (
@@ -387,6 +389,8 @@ def test_clean_views(
                             dld_table=table_name,
                             buildings=DLD_TABLE_BUILDINGS,
                             units=DLD_TABLE_UNITS,
+                            oa_service_charges=DLD_TABLE_OA_SERVICE_CHARGES,
+                            land_registry=DLD_TABLE_LAND_REGISTRY,
                         )
                     )
                     cursor.close()

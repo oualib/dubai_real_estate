@@ -15,4 +15,4 @@ CREATE OR REPLACE TABLE
 		"participant_name_ar" Nullable(Varchar(506))
 	) 
     ENGINE = MergeTree()
-    PRIMARY KEY("participant_id");
+    PRIMARY KEY("permit_id");

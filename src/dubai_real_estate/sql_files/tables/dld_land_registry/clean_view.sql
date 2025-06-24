@@ -46,7 +46,7 @@ FROM
             pre_registration_number,
             built_up_area * 0.092903 AS actual_area,
             creation_date
-        FROM FROM "{dld_database}"."{buildings}_staging" WHERE parcel_id IS NULL
+        FROM "{dld_database}"."{buildings}_staging" WHERE parcel_id IS NULL
         UNION DISTINCT
         SELECT
             COALESCE(parcel_id, property_id) AS parcel_number,
@@ -68,7 +68,7 @@ FROM
             pre_registration_number,
             SUM(actual_area) OVER (PARTITION BY parcel_id, project_name_en) * 0.092903 AS actual_area,
             creation_date
-        FROM FROM "{dld_database}"."{units}_staging" WHERE parcel_id IS NULL
+        FROM "{dld_database}"."{units}_staging" WHERE parcel_id IS NULL
     ) AS q0
     GROUP BY 1, 4, 5, 11, 12
 ),
@@ -116,7 +116,7 @@ FROM
             pre_registration_number,
             built_up_area * 0.092903 AS actual_area,
             creation_date
-        FROM FROM "{dld_database}"."{buildings}_staging"
+        FROM "{dld_database}"."{buildings}_staging"
         UNION DISTINCT
         SELECT
             COALESCE(parcel_id, property_id) AS parcel_number,

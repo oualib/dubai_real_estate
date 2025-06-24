@@ -7,9 +7,8 @@ SELECT
     fz_company_name_ar,
     license_source_id,
     license_number,
-    license_type_extract,
-    license_issue_date,
-    license_expiry_date,
+    FORMAT_DATE_1(license_issue_date) AS license_issue_date,
+    FORMAT_DATE_1(license_expiry_date) AS license_expiry_date,
     email,
     webpage,
     phone

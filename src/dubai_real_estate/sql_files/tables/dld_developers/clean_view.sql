@@ -12,10 +12,7 @@ SELECT
     license_source_id,
     license_type_id,
     license_number,
-    CASE 
-		WHEN 
-			YEAR(license_issue_date) > 1971 THEN license_issue_date 
-	END AS license_issue_date,
+    license_issue_date,
     license_expiry_date,
     contact,
     phone,
