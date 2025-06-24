@@ -53,7 +53,7 @@ DATABASE_TEST_NAME = "dld_test"
             "dld_units",
             "creation_date",
             2198953,
-            date(1970, 1, 1),
+            date(2008, 10, 14),
             date(2025, 5, 31),
         ),
         (
@@ -69,7 +69,7 @@ DATABASE_TEST_NAME = "dld_test"
             "dld_buildings",
             "creation_date",
             222914,
-            date(2060, 1, 1),
+            date(2008, 10, 14),
             date(2060, 1, 1),
         ),
         (
@@ -77,7 +77,7 @@ DATABASE_TEST_NAME = "dld_test"
             "dld_free_zone_companies_licensing",
             "license_issue_date",
             250,
-            date(2060, 1, 1),
+            date(1995, 10, 14),
             date(2060, 1, 1),
         ),
         (
@@ -101,7 +101,7 @@ DATABASE_TEST_NAME = "dld_test"
             "dld_map_requests",
             "request_date",
             891041,
-            date(2060, 1, 1),
+            date(2003, 2, 11),
             date(2060, 1, 1),
         ),
         (
@@ -116,7 +116,7 @@ DATABASE_TEST_NAME = "dld_test"
             DATABASE_TEST_NAME,
             "dld_offices",
             "license_issue_date",
-            999999999999999,
+            4935,
             date(2060, 1, 1),
             date(2060, 1, 1),
         ),
@@ -258,7 +258,7 @@ def test_create_ingest_tables(
             "dld_units",
             "creation_date",
             2198953,
-            date(1970, 1, 1),
+            date(2008, 10, 14),
             date(2025, 5, 31),
         ),
     ],

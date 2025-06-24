@@ -14,9 +14,9 @@ SELECT
 	FORMAT_DATE("cancel_date") AS "cancel_date",
 	FORMAT_INT("legal_type_id") AS "legal_type_id",
 	FORMAT_INT("activity_type_id") AS "activity_type_id",
-	FORMAT_VARCHAR("trade_name_en") AS "trade_name_en",
-	FORMAT_VARCHAR("trade_name_ar") AS "trade_name_ar",
-	FORMAT_VARCHAR("print_rmker_ar") AS "print_rmker_ar"
+	FORMAT_VARCHAR("trade_name_english") AS "trade_name_en",
+	FORMAT_VARCHAR("trade_name_arabic") AS "trade_name_ar",
+	FORMAT_VARCHAR("print_rmker_arabic") AS "print_rmker_ar"
 FROM url(
     'https://www.dubaipulse.gov.ae/dataset/6f7f5f08-c633-4dae-b3ef-16f1ed54936d/resource/5749474d-c8da-4674-a002-f77fcfb34884/download/real_estate_licenses.csv',
     'CSVWithNames'
