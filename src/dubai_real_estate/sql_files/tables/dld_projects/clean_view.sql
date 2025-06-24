@@ -90,8 +90,8 @@ FROM
         SELECT 
             MIN(area_id) OVER (PARTITION BY project_id) AS area_id,
             MIN(NULLIFNEGS(master_project_id)) OVER (PARTITION BY project_id) AS master_project_id,
-            LAST_VALUE(master_project_en IGNORE NULLS) OVER (PARTITION BY project_id) AS master_project_en,
-            LAST_VALUE(master_project_ar IGNORE NULLS) OVER (PARTITION BY project_id) AS master_project_ar,
+            LAST_VALUE(master_project_en) IGNORE NULLS OVER (PARTITION BY project_id) AS master_project_en,
+            LAST_VALUE(master_project_ar) IGNORE NULLS OVER (PARTITION BY project_id) AS master_project_ar,
             project_id,
             project_name_en,
             project_name_ar,

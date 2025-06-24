@@ -2,6 +2,7 @@ CREATE OR REPLACE VIEW
 "{dld_database}"."{dld_table}_staging_clean"
 AS
 SELECT
+    creation_date,
     parcel_number,
     property_number,
     master_project_id,
@@ -24,6 +25,7 @@ SELECT
 FROM
 (
     SELECT 
+        creation_date,
         COALESCE(parcel_id, property_id) AS parcel_number,
         parent_property_id AS property_number,
         NULLIFNEG(master_project_id) AS master_project_id,

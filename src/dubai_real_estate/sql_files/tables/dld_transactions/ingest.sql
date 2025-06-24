@@ -3,7 +3,7 @@ SELECT
 	FORMAT_VARCHAR("transaction_id") AS "transaction_id",
 	FORMAT_INT("trans_group_id") AS "trans_group_id",
 	FORMAT_INT("procedure_id") AS "procedure_id",
-	FORMAT_DATE("instance_date") AS "instance_date",
+	"instance_date" AS "instance_date",
 	FORMAT_INT("area_id") AS "area_id",
 	FORMAT_VARCHAR("nearest_landmark_en") AS "nearest_landmark_en",
 	FORMAT_VARCHAR("nearest_metro_en") AS "nearest_metro_en",
