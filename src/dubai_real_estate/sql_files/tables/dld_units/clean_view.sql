@@ -2,6 +2,7 @@ CREATE OR REPLACE VIEW
 "{dld_database}"."{dld_table}_staging_clean"
 AS
 SELECT
+    creation_date,
     COALESCE(parcel_id, property_id) AS parcel_number,
     grandparent_property_id AS property_number,
     NULLIFNEG(master_project_id) AS master_project_id,
@@ -16,5 +17,4 @@ SELECT
     common_area,
     actual_common_area,
     unit_balcony_area
-    
 FROM "{dld_database}"."{dld_table}_staging";
