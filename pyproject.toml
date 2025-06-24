@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dubai_real_estate"
+version = "0.1.0a1"
+description = "A Python library for analyzing Dubai real estate data using ClickHouse and AI-powered insights."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Badr Ouali", email = "badr@clickhouse.com"}
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "requests>=2.25.0",
+    "clickhouse-connect>=0.6.0",
+    "chdb>=1.0.0",
+    "cryptography>=3.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=3.0",
+    "flake8>=6.0",
+    "black",
+    "isort",
+]
+
+[project.urls]
+Homepage = "https://github.com/ClickHouse/dubai_real_estate"
+Repository = "https://github.com/ClickHouse/dubai_real_estate"
+
+# [tool.setuptools_scm]
+# write_to = "src/dubai_real_estate/_version.py"
+
+[tool.setuptools.packages.find]
+where = ["src"]

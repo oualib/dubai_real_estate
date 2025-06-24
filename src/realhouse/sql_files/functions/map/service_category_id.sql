@@ -1,0 +1,43 @@
+CREATE OR REPLACE FUNCTION MAP_SERVICE_CATEGORY_EN AS (x) ->
+    CASE 
+        WHEN x = 1     THEN 'Services'
+        WHEN x = 2     THEN 'Maintenance'
+        WHEN x = 3     THEN 'Improvement'
+        WHEN x = 4     THEN 'Hotel Services'
+        WHEN x = 5     THEN 'Utilities Services'
+        WHEN x = 6     THEN 'Management Services'
+        WHEN x = 7     THEN 'Insurance'
+        WHEN x = 8     THEN 'Master Community'
+        WHEN x = 9     THEN 'Income'
+        WHEN x = 10    THEN 'Adjustment'
+        WHEN x = 12    THEN 'Reserved Fund'
+        WHEN x = 13    THEN 'Shared Services'
+        WHEN x = 14    THEN 'Fire Related Provisions'
+        WHEN x = 48540 THEN 'Unit A/C (Charges)'
+        WHEN x = 48541 THEN 'Storage Units'
+        WHEN x = 48550 THEN 'Unit A/C (Sq.Ft)'
+        WHEN x = 48560 THEN 'Meter Installation'
+        WHEN x = 48570 THEN 'Parking'
+    END;
+
+CREATE OR REPLACE FUNCTION MAP_SERVICE_CATEGORY_AR AS (x) ->
+    CASE 
+        WHEN x = 1     THEN 'خدمات'
+        WHEN x = 2     THEN 'صيانة'
+        WHEN x = 3     THEN 'التطوير والتحسين'
+        WHEN x = 4     THEN 'خدمات فندقية'
+        WHEN x = 5     THEN 'المرافق'
+        WHEN x = 6     THEN 'خدمات الإدارة'
+        WHEN x = 7     THEN 'تأمين'
+        WHEN x = 8     THEN 'المجمع الرئيس'
+        WHEN x = 9     THEN 'الإيرادات'
+        WHEN x = 10    THEN 'التعديلات'
+        WHEN x = 12    THEN 'الصندوق الاحتياطي'
+        WHEN x = 13    THEN 'الخدمات المشتركة'
+        WHEN x = 14    THEN 'المجتمع الرئيسي'
+        WHEN x = 48540 THEN 'وحدة A / C (الرسوم)'
+        WHEN x = 48541 THEN 'رسوم الخدمات - المخازن'
+        WHEN x = 48550 THEN 'وحدة A / C (قدم مربع)'
+        WHEN x = 48560 THEN 'تركيب متر'
+        WHEN x = 48570 THEN 'موقف سيارات'
+    END;

@@ -1,0 +1,7 @@
+CREATE OR REPLACE FUNCTION MAP_EJARI_BUS_PROPERTY_TYPE AS (x) ->
+    CASE 
+        WHEN x = 0 THEN 1
+        WHEN x = 1 THEN 2
+        WHEN x = 2 THEN 3
+        ELSE x
+    END;

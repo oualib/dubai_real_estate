@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION MAP_PARKING_ALLOCATION_TYPE_EN AS (x) ->
+    CASE 
+        WHEN x = 1 THEN 'Title'
+        WHEN x = 2 THEN 'EU'
+    END;
+
+CREATE OR REPLACE FUNCTION MAP_PARKING_ALLOCATION_TYPE_AR AS (x) ->
+    CASE 
+        WHEN x = 1 THEN 'عنوان'
+        WHEN x = 2 THEN 'هش'
+    END;

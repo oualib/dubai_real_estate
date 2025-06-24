@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION NULLIFNEG AS (x) ->
+    CASE
+        WHEN x >= 0
+        THEN x
+    END;
+
+CREATE OR REPLACE FUNCTION NULLIFNEGS AS (x) ->
+    CASE
+        WHEN x > 0
+        THEN x
+    END;

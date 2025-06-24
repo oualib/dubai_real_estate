@@ -1,0 +1,38 @@
+CREATE OR REPLACE TABLE
+	{dld_database}."{dld_table}_staging"(
+    	"grandparent_property_id" UInt64,      		
+		"parent_property_id" UInt64,           		
+		"property_id" UInt64,                  		
+    	"property_sub_type_id" Nullable(UInt8), 	
+		"area_id" UInt16,                      		
+    	"zone_id" UInt8,                       		
+		"parcel_id" UInt64,                    		
+    	"munc_zip_code" UInt8,                 		
+    	"munc_number" UInt64,                  		
+    	"land_number" UInt16,                  		
+    	"land_sub_number" UInt8,               		
+    	"land_type_id" Nullable(UInt8),        		
+    	"is_free_hold" Bool,                   		
+    	"is_lease_hold" Bool,                  		
+    	"is_registered" Bool,                  		
+    	"pre_registration_number" String,      		
+    	"master_project_id" Nullable(UInt16),  		
+    	"master_project_en" String,            		
+    	"master_project_ar" String,            		
+    	"project_id" Nullable(UInt64),         		
+    	"project_name_ar" String,              		
+    	"project_name_en" String,              		
+    	"building_number" String,              		
+    	"unit_number" String,                  		
+    	"creation_date" Date,                  		
+    	"floor" String,                        		
+    	"rooms_en" String,                     		
+	    "actual_area" Float32,                 		
+	    "common_area" Float32,                 		
+	    "actual_common_area" Nullable(Float32), 	
+	    "unit_balcony_area" Nullable(Float32), 		
+	    "parking_allocation_type" Nullable(UInt8), 	
+	    "unit_parking_number" String              	
+	) 
+    ENGINE = MergeTree()
+    PRIMARY KEY( "area_id", "building_number");

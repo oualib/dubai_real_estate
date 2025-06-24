@@ -1,0 +1,95 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+    
+    - name: Run flake8
+      run: |
+        flake8 src/ tests/ --count --show-source --statistics
+        
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12', '3.13']
+    
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+          - 9000:9000
+        env:
+          CLICKHOUSE_DB: default
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+        options: >-
+          --health-cmd="clickhouse-client --query='SELECT 1'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Needed for setuptools_scm
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Configure ClickHouse
+      run: |
+        # Wait for ClickHouse to start
+        sleep 5
+        # Configure default user without password
+        curl -X POST 'http://localhost:8123/' \
+          --data-binary "CREATE USER IF NOT EXISTS default IDENTIFIED WITH no_password"
+        curl -X POST 'http://localhost:8123/' \
+          --data-binary "GRANT ALL ON *.* TO default"
+    
+    - name: Wait for ClickHouse to be ready
+      run: |
+        until curl -s http://localhost:8123/ping | grep -q "Ok"; do
+          echo "Waiting for ClickHouse..."
+          sleep 2
+        done
+        echo "ClickHouse is ready!"
+    
+    - name: Test ClickHouse connection
+      run: |
+        curl -X POST 'http://localhost:8123/' \
+          --data-binary 'SELECT version()' || echo "ClickHouse connection failed"
+    
+    - name: Install package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+    
+    - name: Run tests
+      run: pytest
+      env:
+        CLICKHOUSE_HOST: localhost
+        CLICKHOUSE_PORT: 8123
+        CLICKHOUSE_USERNAME: default
+        CLICKHOUSE_PASSWORD: ""
+        CLICKHOUSE_DATABASE: default
