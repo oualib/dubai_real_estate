@@ -14,7 +14,7 @@ SELECT
     exhibition_name_ar_final AS exhibition_name_ar,
     participant_name_en_final AS participant_name_en,
     participant_name_ar_final AS participant_name_ar,
-    location 
+    location
 FROM
 (
     SELECT

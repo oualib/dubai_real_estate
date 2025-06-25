@@ -1,0 +1,37 @@
+CREATE OR REPLACE VIEW 
+"{dld_database}"."{dld_table}_view"
+AS
+SELECT
+    contract_id,
+    contract_type,
+    MAP_CONTRACT_REG_TYPE_EN(contract_reg_type_id) AS contract_reg_type_english,
+    MAP_CONTRACT_REG_TYPE_AR(contract_reg_type_id) AS contract_reg_type_arabic,
+    contract_start_date,
+    contract_end_date,
+    MAP_AREA_NAME_EN(area_id) AS area_name_english,
+    MAP_AREA_NAME_AR(area_id) AS area_name_arabic,
+    MAP_NEAREST_LANDMARK_EN(nearest_landmark_id) AS nearest_landmark_name_english,
+    MAP_NEAREST_LANDMARK_AR(nearest_landmark_id) AS nearest_landmark_name_arabic,
+    MAP_NEAREST_METRO_EN(nearest_metro_id) AS nearest_metro_name_english,
+    MAP_NEAREST_METRO_AR(nearest_metro_id) AS nearest_metro_name_arabic,
+    MAP_NEAREST_MALL_EN(nearest_mall_id) AS nearest_mall_name_english,
+    MAP_NEAREST_MALL_AR(nearest_mall_id) AS nearest_mall_name_arabic,
+    MAP_PROJECT_TYPE_EN(property_type_id) AS property_type_english,
+    MAP_PROJECT_TYPE_AR(property_type_id) AS property_type_arabic,
+    MAP_EJARI_PROPERTY_TYPE_EN(ejari_property_type_id) AS ejari_property_type_english,
+    MAP_EJARI_PROPERTY_TYPE_AR(ejari_property_type_id) AS ejari_property_type_arabic,
+    MAP_PROPERTY_USAGE_EN(property_usage_id) AS property_usage_type_english,
+    MAP_PROPERTY_USAGE_AR(property_usage_id) AS property_usage_type_arabic,
+    master_project_id,
+    project_id,
+    is_free_hold,
+    MAP_TENANT_TYPE_EN(tenant_type_id) AS tenant_type_english,
+    MAP_TENANT_TYPE_AR(tenant_type_id) AS tenant_type_arabic,
+    line_number,
+    no_of_prop,
+    MAP_ROOMS_EN(rooms_id) AS rooms_type_english,
+    MAP_ROOMS_AR(rooms_id) AS rooms_type_arabic,
+    actual_area,
+    contract_amount,
+    annual_amount
+FROM "{dld_database}"."{dld_table}_staging_clean"

@@ -157,7 +157,7 @@ AS
         p0.property_usage_id,
         p0.reg_type_id,
         p1.master_project_id,
-        NULL::Nullable(Int128) project_id,
+        NULL::Nullable(Int128) AS project_id,
         p0.building_name_en,
         p0.building_name_ar,
         p0.rooms_id,
@@ -221,7 +221,7 @@ AS
         CASE 
             WHEN YEAR(instance_date) > 1960 
             THEN instance_date 
-            ELSE (transaction_year::Varchar || '-' || formatDateTime(instance_date, '%m-%d'))::Date
+            ELSE (transaction_year::Varchar || '-' || formatDateTime(instance_date, '%m-%d'))::Nullable(Date)
         END AS instance_date,
         area_id,
         nearest_landmark_id,

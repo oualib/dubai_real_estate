@@ -1,0 +1,38 @@
+CREATE OR REPLACE VIEW 
+"{dld_database}"."{dld_table}_view"
+AS
+SELECT
+    MAP_AREA_NAME_EN(area_id) AS area_name_english,
+    MAP_AREA_NAME_AR(area_id) AS area_name_arabic,
+    land_property_number,
+    MAP_ZONING_AUTHORITY_EN(zoning_authority_id) AS zoning_authority_name_english,
+    MAP_ZONING_AUTHORITY_AR(zoning_authority_id) AS zoning_authority_name_arabic,
+    master_developer_number,
+    developer_number,
+    MAP_ESCROW_AGENT_EN(escrow_agent_id) AS escrow_agent_name_english,
+    MAP_ESCROW_AGENT_AR(escrow_agent_id) AS escrow_agent_name_arabic,
+    master_project_id,
+    master_project_en AS master_project_english,
+    master_project_ar AS master_project_arabic,
+    project_id,
+    project_number,
+    project_name_en AS project_name_english,
+    project_name_ar AS project_name_arabic,
+    MAP_PROJECT_TYPE_EN(project_type_id) AS project_type_english,
+    MAP_PROJECT_TYPE_AR(project_type_id) AS project_type_arabic,
+    MAP_PROJECT_CLASSIFICATION_EN(project_classification_id) AS project_classification_type_english,
+    MAP_PROJECT_CLASSIFICATION_AR(project_classification_id) AS project_classification_type_arabic,
+    MAP_PROJECT_STATUS_EN(project_status_id) AS project_status_english,
+    MAP_PROJECT_STATUS_AR(project_status_id) AS project_status_arabic,
+    project_start_date,
+    project_end_date,
+    completion_date,
+    cancellation_date,
+    percent_completed,
+    no_of_lands,
+    no_of_buildings,
+    no_of_villas,
+    no_of_units,
+    project_description_en AS project_description_english,
+    project_description_ar AS project_description_arabic
+FROM "{dld_database}"."{dld_table}_staging_clean"

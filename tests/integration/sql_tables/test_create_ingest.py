@@ -161,7 +161,7 @@ DLD_TABLE_PROJECTS = "dld_projects"
             DATABASE_TEST_NAME,
             "dld_transactions",
             "instance_date",
-            999999999999999,
+            1475500,
             date(2060, 1, 1),
             date(2060, 1, 1),
         ),
@@ -327,7 +327,7 @@ def test_create_ingest_tables(
             "dld_projects",
             "project_start_date",
             2838,
-            date(2060, 1, 1),
+            date(2000, 1, 1),
             date(2060, 1, 1),
         ),
         (
