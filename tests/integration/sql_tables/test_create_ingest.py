@@ -163,7 +163,7 @@ DLD_TABLE_PROJECTS = "dld_projects"
             "instance_date",
             1475500,
             date(1970, 1, 1),
-            date(2060, 1, 1),
+            date(2025, 6, 12),
         ),
     ],
 )

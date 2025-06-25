@@ -219,8 +219,10 @@ AS
         procedure_id,
         splitByChar('-', transaction_id)[3]::Nullable(Int128) AS transaction_year,
         CASE 
-            WHEN YEAR(instance_date) > 1960 
-            THEN instance_date 
+            WHEN YEAR(instance_date) > 1970 
+                THEN instance_date
+            WHEN instance_date IS NULL
+                THEN NULL
             ELSE (splitByChar('-', transaction_id)[3] || '-' || formatDateTime(instance_date, '%m-%d'))::Nullable(Date)
         END AS instance_date,
         area_id,
