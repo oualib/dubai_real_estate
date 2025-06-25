@@ -1134,6 +1134,50 @@ def test_license_source(clickhouse_connection: BaseConnection):
 
 
 @pytest.mark.integration
+def test_license_source_dev(clickhouse_connection: BaseConnection):
+    """Test license_source mapping functions."""
+    # Read and format SQL
+    sql = get_function_sql("MAP", "license_source_dev_id")
+
+    with clickhouse_connection:
+        # Create functions
+        for func in sql.split(";"):
+            if func.strip():
+                cursor = clickhouse_connection.execute(func.strip())
+                cursor.close()
+
+        # Test cases: (input, expected_en, expected_ar)
+        test_cases = [
+            (1, "DED", "دائرة التنمية الاقتصادية"),
+            (4, "Dubai South", "دبي ساوث"),
+            (
+                5,
+                "Dubai International Airport Free-Zone Authority",
+                "سلطة المنطقة الحرة لمطار دبي",
+            ),
+            (999, None, None),  # Unknown
+        ]
+
+        for source_id, expected_en, expected_ar in test_cases:
+            # Test English function
+            cursor = clickhouse_connection.execute(
+                f"SELECT MAP_LICENSE_SOURCE_DEV_EN({source_id})"
+            )
+            en_result = cursor.fetchone()[0]
+            cursor.close()
+
+            # Test Arabic function
+            cursor = clickhouse_connection.execute(
+                f"SELECT MAP_LICENSE_SOURCE_DEV_AR({source_id})"
+            )
+            ar_result = cursor.fetchone()[0]
+            cursor.close()
+
+            assert en_result == expected_en
+            assert ar_result == expected_ar
+
+
+@pytest.mark.integration
 def test_legal_type(clickhouse_connection: BaseConnection):
     """Test legal_type mapping functions."""
     # Read and format SQL
