@@ -9,8 +9,7 @@ SELECT
 	NULLIFNEGS(FORMAT_INT("legal_status")) AS "legal_status",
 	FORMAT_INT("license_source_id") AS "license_source_id", -- TODO: VERIFY
 	NULLIFNEGS(FORMAT_INT("license_type_id")) AS "license_type_id",
-	EXTRACT_LICENSE_TYPE("license_number") AS "license_type_extract",
-	FORMAT_LICENSE("license_number") AS "license_number_final",
+	FORMAT_VARCHAR("license_number") AS "license_number_final",
 	FORMAT_DATE("license_issue_date") AS "license_issue_date",
 	FORMAT_DATE("license_expiry_date") AS "license_expiry_date",
 	COALESCE(FORMAT_WEBSITE("webpage"), FORMAT_EMAIL("webpage")) AS "contact",

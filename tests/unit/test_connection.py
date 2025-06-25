@@ -307,7 +307,9 @@ class TestConnectionManager:
     @pytest.fixture
     def manager(self, temp_storage_dir):
         """Create connection manager with temporary storage."""
-        with patch("dubai_real_estate.connection.storage.get_storage") as mock_get_storage:
+        with patch(
+            "dubai_real_estate.connection.storage.get_storage"
+        ) as mock_get_storage:
             mock_storage = CredentialStorage(temp_storage_dir)
             mock_get_storage.return_value = mock_storage
             yield ConnectionManager()

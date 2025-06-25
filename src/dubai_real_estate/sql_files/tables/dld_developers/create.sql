@@ -1,21 +1,20 @@
 CREATE OR REPLACE TABLE
 	"{dld_database}"."{dld_table}_staging"(
-		"participant_id" UInt64,
-		"developer_number" UInt16,
-		"developer_name_ar" String,
-		"developer_name_en" String,
-		"chamber_commerce_number" UInt32,
-		"registration_date" Date,
-		"legal_status" UInt32,
-		"license_source_id" UInt16,
-		"license_type_id" UInt32,
-		"license_type_extract" Nullable(String),
-		"license_number" Nullable(UInt64),
-		"license_issue_date" Date,
-		"license_expiry_date" Date,
-		"contact" String,
-		"phone" UInt64,
-		"fax" UInt64
+		"participant_id" Int128,
+		"developer_number" Nullable(Int128),
+		"developer_name_ar" Nullable(Varchar(392)),
+		"developer_name_en" Nullable(Varchar(250)),
+		"chamber_commerce_number" Nullable(Int128),
+		"registration_date" Nullable(Date),
+		"legal_status" Nullable(Int128),
+		"license_source_id" Nullable(Int128),
+		"license_type_id" Nullable(Int128),
+		"license_number" Nullable(Varchar(100)),
+		"license_issue_date" Nullable(Date),
+		"license_expiry_date" Nullable(Date),
+		"contact" Nullable(Varchar(110)),
+		"phone" Nullable(Int128),
+		"fax" Nullable(Int128)
 	) 
     ENGINE = MergeTree()
-    PRIMARY KEY("developer_number", "participant_id");
+    PRIMARY KEY("participant_id");

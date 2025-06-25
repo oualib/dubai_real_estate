@@ -23,7 +23,10 @@ class SQLParser:
             # Find the dubai_real_estate package root and append sql_files
             current_dir = Path(__file__).parent
             # Go up until we find the dubai_real_estate root (contains __init__.py and connection/)
-            while current_dir.name != "dubai_real_estate" and current_dir.parent != current_dir:
+            while (
+                current_dir.name != "dubai_real_estate"
+                and current_dir.parent != current_dir
+            ):
                 current_dir = current_dir.parent
 
             if current_dir.name == "dubai_real_estate":
