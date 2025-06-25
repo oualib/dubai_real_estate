@@ -1,11 +1,11 @@
 CREATE OR REPLACE TABLE
 	"{dld_database}"."{dld_table}_staging"(
 		"location" Nullable(Varchar(238)),
-		"parent_permit_id" Nullable(Integer),
-		"parent_service_id" Nullable(Integer),
-		"permit_id" Integer,
-		"service_id" Nullable(Integer),
-		"permit_status_id" Nullable(Integer),
+		"parent_permit_id" Nullable(Int128),
+		"parent_service_id" Nullable(Int128),
+		"permit_id" Int128,
+		"service_id" Nullable(Int128),
+		"permit_status_id" Nullable(Int128),
 		"start_date" Nullable(Date),
 		"end_date" Nullable(Date),
 		"license_number" Nullable(Varchar(100)),

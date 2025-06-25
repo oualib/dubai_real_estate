@@ -3,7 +3,7 @@ SELECT
 	FORMAT_INT("application_id") AS "application_id",
 	FORMAT_INT("procedure_id") AS "procedure_id",
 	FORMAT_INT("property_type_id") AS "property_type_id",
-	FLOOR(REGEXP_REPLACE("request_id", '[^0-9]', '')::Nullable(Integer) / 1000) AS "request_id",
+	FLOOR(REGEXP_REPLACE("request_id", '[^0-9]', '')::Nullable(Int128) / 1000) AS "request_id",
 	FORMAT_INT("request_source_id") AS "request_source_id",
 	"request_date" AS "request_date",
 	FORMAT_INT("no_of_siteplans") AS "no_of_siteplans"

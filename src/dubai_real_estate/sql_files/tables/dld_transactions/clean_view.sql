@@ -66,8 +66,8 @@ AS
         property_sub_type_id,
         property_usage_id,
         reg_type_id,
-        NULL::Nullable(Integer) AS master_project_id,
-        NULL::Nullable(Integer) AS project_id,
+        NULL::Nullable(Int128) AS master_project_id,
+        NULL::Nullable(Int128) AS project_id,
         building_name_en,
         building_name_ar,
         rooms_id,
@@ -157,7 +157,7 @@ AS
         p0.property_usage_id,
         p0.reg_type_id,
         p1.master_project_id,
-        NULL::Nullable(Integer) project_id,
+        NULL::Nullable(Int128) project_id,
         p0.building_name_en,
         p0.building_name_ar,
         p0.rooms_id,
@@ -217,7 +217,7 @@ AS
         transaction_id,
         trans_group_id,
         procedure_id,
-        splitByChar('-', transaction_id)[3]::Nullable(Integer) AS transaction_year,
+        splitByChar('-', transaction_id)[3]::Nullable(Int128) AS transaction_year,
         CASE 
             WHEN YEAR(instance_date) > 1960 
             THEN instance_date 
