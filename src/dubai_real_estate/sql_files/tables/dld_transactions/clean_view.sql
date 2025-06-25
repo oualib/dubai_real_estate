@@ -221,7 +221,7 @@ AS
         CASE 
             WHEN YEAR(instance_date) > 1960 
             THEN instance_date 
-            ELSE (transaction_year::Varchar || '-' || formatDateTime(instance_date, '%m-%d'))::Nullable(Date)
+            ELSE (splitByChar('-', transaction_id)[3] || '-' || formatDateTime(instance_date, '%m-%d'))::Nullable(Date)
         END AS instance_date,
         area_id,
         nearest_landmark_id,
