@@ -2,5 +2,35 @@ CREATE OR REPLACE VIEW
 "{dld_database}"."{dld_table}_view"
 AS
 SELECT
-
+    transaction_id,
+    trans_group_id,
+    procedure_id,
+    instance_date,
+    MAP_AREA_NAME_EN(area_id) AS area_name_english,
+    MAP_AREA_NAME_AR(area_id) AS area_name_arabic,
+    MAP_NEAREST_LANDMARK_EN(nearest_landmark_id) AS nearest_landmark_name_english,
+    MAP_NEAREST_LANDMARK_AR(nearest_landmark_id) AS nearest_landmark_name_arabic,
+    MAP_NEAREST_METRO_EN(nearest_metro_id) AS nearest_metro_name_english,
+    MAP_NEAREST_METRO_AR(nearest_metro_id) AS nearest_metro_name_arabic,
+    MAP_NEAREST_MALL_EN(nearest_mall_id) AS nearest_mall_name_english,
+    MAP_NEAREST_MALL_AR(nearest_mall_id) AS nearest_mall_name_arabic,
+    master_project_id,
+    project_id,
+    building_name,
+    building_number,
+    MAP_PROPERTY_TYPE_EN(property_type_id) AS property_type_english,
+    MAP_PROPERTY_TYPE_AR(property_type_id) AS property_type_arabic,
+    MAP_PROPERTY_SUB_TYPE_EN(property_sub_type_id) AS property_sub_type_english,
+    MAP_PROPERTY_SUB_TYPE_AR(property_sub_type_id) AS property_sub_type_arabic,
+    MAP_PROPERTY_USAGE_EN(property_usage_id) AS property_usage_english,
+    MAP_PROPERTY_USAGE_AR(property_usage_id) AS property_usage_arabic,
+    MAP_REG_TYPE_EN(reg_type_id) AS reg_type_english,
+    MAP_REG_TYPE_AR(reg_type_id) AS reg_type_arabic,
+    no_of_parties_role_1,
+    no_of_parties_role_2,
+    no_of_parties_role_3,
+    has_parking,
+    rooms_id,
+    procedure_area,
+    actual_worth
 FROM "{dld_database}"."{dld_table}_staging_clean"

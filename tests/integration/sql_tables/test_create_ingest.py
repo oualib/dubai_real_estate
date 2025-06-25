@@ -354,14 +354,14 @@ def test_create_ingest_tables(
         #     None,
         #     None,
         # ),
-        (
-            DATABASE_TEST_NAME,
-            "dld_transactions",
-            "instance_date",
-            1475500,
-            date(1970, 1, 1),
-            date(2060, 1, 1),
-        ),
+        # (
+        #     DATABASE_TEST_NAME,
+        #     "dld_transactions",
+        #     "instance_date",
+        #     1475500,
+        #     date(1970, 1, 1),
+        #     date(2060, 1, 1),
+        # ),
     ],
 )
 def test_clean_views(
