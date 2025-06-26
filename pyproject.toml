@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dubai_real_estate"
-version = "0.1.0a1"
+version = "0.1.0"
 description = "A Python library for analyzing Dubai real estate data using ClickHouse and AI-powered insights."
 readme = "README.md"
 license = {text = "Apache-2.0"}
