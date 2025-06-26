@@ -7,7 +7,6 @@ AS
 (
     SELECT
         contract_id,
-        contract_type,
         contract_reg_type_id,
         contract_start_date,
         contract_end_date,
@@ -54,7 +53,6 @@ AS
 (
     SELECT
         contract_id,
-        contract_type,
         contract_reg_type_id,
         contract_start_date,
         contract_end_date,
@@ -85,7 +83,6 @@ AS
 (
     SELECT
         p0.contract_id,
-        p0.contract_type,
         p0.contract_reg_type_id,
         p0.contract_start_date,
         p0.contract_end_date,
@@ -142,7 +139,6 @@ AS
 (
     SELECT
         p0.contract_id,
-        p0.contract_type,
         p0.contract_reg_type_id,
         p0.contract_start_date,
         p0.contract_end_date,
@@ -211,7 +207,6 @@ AS
 (
     SELECT
         contract_id,
-        contract_type,
         contract_reg_type_id,
         contract_start_date,
         contract_end_date,

@@ -8,7 +8,7 @@ CREATE OR REPLACE TABLE
 		"rent_contract_no" Nullable(Varchar(100)),
 		"participant_id" Int128,
 		"license_number" Nullable(Varchar(100)),
-		"status_id" Nullable(Varchar(100)),
+		"status_id" Nullable(Int128),
 		"issue_date" Nullable(Date),
 		"expiry_date" Nullable(Date),
 		"cancel_date" Nullable(Date),

@@ -1,0 +1,36 @@
+CREATE OR REPLACE TABLE
+	"{dld_database}"."{dld_table}"(
+        "contract_id" String,
+        "contract_reg_type_english" Nullable(String),
+        "contract_reg_type_arabic" Nullable(String),
+        "contract_start_date" Nullable(Date),
+        "contract_end_date" Nullable(Date),
+        "area_name_english" Nullable(String),
+        "area_name_arabic" Nullable(String),
+        "nearest_landmark_name_english" Nullable(String),
+        "nearest_landmark_name_arabic" Nullable(String),
+        "nearest_metro_name_english" Nullable(String),
+        "nearest_metro_name_arabic" Nullable(String),
+        "nearest_mall_name_english" Nullable(String),
+        "nearest_mall_name_arabic" Nullable(String),
+        "property_type_english" Nullable(String),
+        "property_type_arabic" Nullable(String),
+        "ejari_property_type_english" Nullable(String),
+        "ejari_property_type_arabic" Nullable(String),
+        "property_usage_type_english" Nullable(String),
+        "property_usage_type_arabic" Nullable(String),
+        "master_project_id" Nullable(Int128),
+        "project_id" Nullable(Int128),
+        "is_free_hold" Nullable(Bool),
+        "tenant_type_english" Nullable(String),
+        "tenant_type_arabic" Nullable(String),
+        "line_number" Nullable(Int128),
+        "no_of_prop" Nullable(Int128),
+        "rooms_type_english" Nullable(String),
+        "rooms_type_arabic" Nullable(String),
+        "actual_area" Nullable(Int128),
+        "contract_amount" Nullable(Int128),
+        "annual_amount" Nullable(Int128)
+	) 
+    ENGINE = MergeTree()
+    PRIMARY KEY("contract_id");

@@ -1,7 +1,6 @@
 CREATE OR REPLACE TABLE
 	"{dld_database}"."{dld_table}_staging"(
-		"contract_id" Nullable(Int128),
-		"contract_type" Nullable(Varchar(8)),
+		"contract_id" Nullable(Varchar(26)),
 		"area_id" Int128,
 		"nearest_landmark_en" Nullable(Varchar(66)),
 		"nearest_metro_en" Nullable(Varchar(72)),
