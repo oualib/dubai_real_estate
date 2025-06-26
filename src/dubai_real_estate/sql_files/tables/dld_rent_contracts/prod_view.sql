@@ -3,7 +3,6 @@ CREATE OR REPLACE VIEW
 AS
 SELECT
     contract_id,
-    contract_type,
     MAP_CONTRACT_REG_TYPE_EN(contract_reg_type_id) AS contract_reg_type_english,
     MAP_CONTRACT_REG_TYPE_AR(contract_reg_type_id) AS contract_reg_type_arabic,
     contract_start_date,

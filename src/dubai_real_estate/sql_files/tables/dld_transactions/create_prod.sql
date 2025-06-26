@@ -1,0 +1,36 @@
+CREATE OR REPLACE TABLE
+	"{dld_database}"."{dld_table}"(
+        "transaction_id" String,
+        "trans_group_id" Nullable(Int128),
+        "procedure_id" Nullable(Int128),
+        "instance_date" Nullable(Date),
+        "area_name_english" Nullable(String),
+        "area_name_arabic" Nullable(String),
+        "nearest_landmark_name_english" Nullable(String),
+        "nearest_landmark_name_arabic" Nullable(String),
+        "nearest_metro_name_english" Nullable(String),
+        "nearest_metro_name_arabic" Nullable(String),
+        "nearest_mall_name_english" Nullable(String),
+        "nearest_mall_name_arabic" Nullable(String),
+        "master_project_id" Nullable(Int128),
+        "project_id" Nullable(Int128),
+        "building_name" Nullable(String),
+        "building_number" Nullable(Int128),
+        "property_type_english" Nullable(String),
+        "property_type_arabic" Nullable(String),
+        "property_sub_type_english" Nullable(String),
+        "property_sub_type_arabic" Nullable(String),
+        "property_usage_english" Nullable(String),
+        "property_usage_arabic" Nullable(String),
+        "reg_type_english" Nullable(String),
+        "reg_type_arabic" Nullable(String),
+        "no_of_parties_role_1" Nullable(Int128),
+        "no_of_parties_role_2" Nullable(Int128),
+        "no_of_parties_role_3" Nullable(Int128),
+        "has_parking" Nullable(Bool),
+        "rooms_id" Nullable(UInt16),
+        "procedure_area" Nullable(Float32),
+        "actual_worth" Nullable(Float32)
+	) 
+    ENGINE = MergeTree()
+    PRIMARY KEY("transaction_id");

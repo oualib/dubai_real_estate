@@ -1,0 +1,38 @@
+CREATE OR REPLACE TABLE
+	"{dld_database}"."{dld_table}"(
+        "area_name_english" Nullable(String),
+        "area_name_arabic" Nullable(String),
+        "land_property_number" Nullable(Int128),
+        "zoning_authority_name_english" Nullable(String),
+        "zoning_authority_name_arabic" Nullable(String),
+        "master_developer_number" Nullable(Int128),
+        "developer_number" Nullable(Int128),
+        "escrow_agent_name_english" Nullable(String),
+        "escrow_agent_name_arabic" Nullable(String),
+        "master_project_id" Nullable(Int128),
+        "master_project_english" Nullable(String),
+        "master_project_arabic" Nullable(String),
+        "project_id" Nullable(Int128),
+        "project_number" Int128,
+        "project_name_english" Nullable(String),
+        "project_name_arabic" Nullable(String),
+        "project_type_english" Nullable(String),
+        "project_type_arabic" Nullable(String),
+        "project_classification_type_english" Nullable(String),
+        "project_classification_type_arabic" Nullable(String),
+        "project_status_english" Nullable(String),
+        "project_status_arabic" Nullable(String),
+        "project_start_date" Nullable(Date),
+        "project_end_date" Nullable(Date),
+        "completion_date" Nullable(Date),
+        "cancellation_date" Nullable(Date),
+        "percent_completed" Nullable(Int128),
+        "no_of_lands" Nullable(Int128),
+        "no_of_buildings" Nullable(Int128),
+        "no_of_villas" Nullable(Int128),
+        "no_of_units" Nullable(Int128),
+        "project_description_english" Nullable(String),
+        "project_description_arabic" Nullable(String)
+	) 
+    ENGINE = MergeTree()
+    PRIMARY KEY("project_number");

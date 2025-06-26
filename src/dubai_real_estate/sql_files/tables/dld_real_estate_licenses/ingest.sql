@@ -8,7 +8,7 @@ SELECT
 	FORMAT_VARCHAR("rent_contract_no") AS "rent_contract_no",
 	FORMAT_INT("participant_id") AS "participant_id",
 	FORMAT_VARCHAR("license_number") AS "license_number",
-	FORMAT_VARCHAR("status_id") AS "status_id",
+	FORMAT_INT("status_id") AS "status_id",
 	FORMAT_DATE_SLASH("issue_date") AS "issue_date",
 	FORMAT_DATE_SLASH("expiry_date") AS "expiry_date",
 	FORMAT_DATE_SLASH("cancel_date") AS "cancel_date",
