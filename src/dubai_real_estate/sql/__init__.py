@@ -57,22 +57,23 @@ from .parser import (
 
 # Import magic command functions for Jupyter
 try:
-    from ..magic.sql_magic import SQLMagic, load_ipython_extension, unload_ipython_extension
+    from ..magic.sql_magic import (
+        SQLMagic,
+        load_ipython_extension,
+        unload_ipython_extension,
+    )
+
     _MAGIC_AVAILABLE = True
 except ImportError:
     _MAGIC_AVAILABLE = False
 
 __all__ = [
     "SQLParser",
-    "create_parser", 
+    "create_parser",
     "get_table_sql",
     "get_function_sql",
 ]
 
 # Add magic command exports if available
 if _MAGIC_AVAILABLE:
-    __all__.extend([
-        "SQLMagic",
-        "load_ipython_extension", 
-        "unload_ipython_extension"
-    ])
+    __all__.extend(["SQLMagic", "load_ipython_extension", "unload_ipython_extension"])

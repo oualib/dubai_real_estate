@@ -27,8 +27,14 @@ import warnings
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 import pandas as pd
-from IPython.core.magic import Magics, line_magic, cell_magic, line_cell_magic, magics_class
-from IPython.core.magic_arguments import (argument, magic_arguments, parse_argstring)
+from IPython.core.magic import (
+    Magics,
+    line_magic,
+    cell_magic,
+    line_cell_magic,
+    magics_class,
+)
+from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 from IPython.display import display, HTML, Markdown
 from IPython.core.display import Javascript
 
@@ -42,25 +48,25 @@ except ImportError:
 @magics_class
 class SQLMagic(Magics):
     """SQL Magic Commands for ClickHouse in Jupyter Notebooks."""
-    
+
     def __init__(self, shell=None):
         super().__init__(shell)
         self.connection = None
         self.query_history = []
         self.result_cache = {}
         self.last_result = None
-        self.sql_config = {
-            'max_rows_display': 100,
-            'show_execution_time': True,
-            'show_row_count': True,
-            'auto_limit': 1000,
-            'minimal_mode': False,
-            'cache_results': False,
-            'export_format': 'csv'
+        self.isql_config = {
+            "max_rows_display": 100,
+            "show_execution_time": True,
+            "show_row_count": True,
+            "auto_limit": 1000,
+            "minimal_mode": False,
+            "cache_results": False,
+            "export_format": "csv",
         }
         self._setup_styles()
         self._show_welcome_message()
-    
+
     def _show_welcome_message(self):
         """Show welcome message when extension is loaded."""
         welcome_html = """
@@ -82,12 +88,12 @@ class SQLMagic(Magics):
                 ⚙️ <code>%sql_config</code> - Configure settings<br>
                 📋 <code>%sql_tables</code> - List available tables<br>
                 📜 <code>%sql_history</code> - View query history<br><br>
-                <strong>Available arguments:</strong> <code>--limit</code>, <code>--minimal</code>, <code>--cache</code>, <code>--export</code>
+                <strong>Available arguments:</strong> <code>max_rows_display</code>, <code>show_execution_time</code>, <code>show_row_count</code>, <code>auto_limit</code>, <code>minimal_mode</code>, <code>cache_results</code>, <code>export_format</code>
             </div>
         </div>
         """
         display(HTML(welcome_html))
-    
+
     def _setup_styles(self):
         """Setup CSS styles for beautiful output."""
         css = """
@@ -312,7 +318,7 @@ class SQLMagic(Magics):
         </style>
         """
         display(HTML(css))
-    
+
     def _get_connection(self) -> BaseConnection:
         """Get ClickHouse connection."""
         if self.connection is None:
@@ -324,36 +330,36 @@ class SQLMagic(Magics):
                     "create_connection('my_conn', 'client', host='localhost', set_auto=True)"
                 )
         return self.connection
-    
+
     def _create_clickhouse_logo_svg(self) -> str:
         """Create ClickHouse logo SVG."""
-        return '''
+        return """
         <svg class="clickhouse-logo" viewBox="0 0 24 24" fill="none">
             <path d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333 -21.33H8v21.33H5.333Z" fill="#000000"/>
         </svg>
-        '''
-    
+        """
+
     def _parse_sql_statements(self, sql: str) -> List[str]:
         """Parse SQL into individual statements, handling multi-statement queries."""
         # Remove comments
-        sql = re.sub(r'--.*$', '', sql, flags=re.MULTILINE)
-        sql = re.sub(r'/\*.*?\*/', '', sql, flags=re.DOTALL)
-        
+        sql = re.sub(r"--.*$", "", sql, flags=re.MULTILINE)
+        sql = re.sub(r"/\*.*?\*/", "", sql, flags=re.DOTALL)
+
         # Split by semicolon but be smart about it (avoid splitting inside strings)
         statements = []
         current_statement = ""
         in_string = False
         quote_char = None
-        
+
         i = 0
         while i < len(sql):
             char = sql[i]
-            
+
             if not in_string:
-                if char in ('"', "'", '`'):
+                if char in ('"', "'", "`"):
                     in_string = True
                     quote_char = char
-                elif char == ';':
+                elif char == ";":
                     if current_statement.strip():
                         statements.append(current_statement.strip())
                     current_statement = ""
@@ -362,73 +368,85 @@ class SQLMagic(Magics):
             else:
                 if char == quote_char:
                     # Check if it's escaped
-                    if i == 0 or sql[i-1] != '\\':
+                    if i == 0 or sql[i - 1] != "\\":
                         in_string = False
                         quote_char = None
-            
+
             current_statement += char
             i += 1
-        
+
         # Add the last statement if it exists
         if current_statement.strip():
             statements.append(current_statement.strip())
-        
+
         return [stmt for stmt in statements if stmt.strip()]
-    
-    def _execute_single_statement(self, sql: str, connection: BaseConnection) -> Dict[str, Any]:
+
+    def _execute_single_statement(
+        self, sql: str, connection: BaseConnection
+    ) -> Dict[str, Any]:
         """Execute a single SQL statement and return results."""
         start_time = time.time()
-        
+
         try:
             with connection:
                 cursor = connection.execute(sql)
-                
-                # Check if this is a SELECT statement
-                is_select = sql.strip().upper().startswith('SELECT') or 'SELECT' in sql.upper()
-                
-                if is_select:
-                    # Fetch all results for SELECT
+
+                # Check if this is a statement that returns data
+                sql_upper = sql.strip().upper()
+
+                # Statements that return tabular data
+                returns_data = (
+                    sql_upper.startswith("SELECT")
+                    or sql_upper.startswith("SHOW")
+                    or sql_upper.startswith("DESCRIBE")
+                    or sql_upper.startswith("DESC")
+                    or sql_upper.startswith("EXPLAIN")
+                    or "SELECT" in sql_upper
+                )
+
+                if returns_data:
+                    # Fetch all results for data-returning statements
                     rows = cursor.fetchall()
                     columns = cursor.column_names()
-                    
+
                     # Create DataFrame
                     if rows and columns:
                         df = pd.DataFrame(rows, columns=columns)
                     else:
                         df = pd.DataFrame()
-                    
+
                     result = {
-                        'type': 'select',
-                        'dataframe': df,
-                        'row_count': len(rows),
-                        'columns': columns,
-                        'execution_time': time.time() - start_time,
-                        'sql': sql
+                        "type": "select",
+                        "dataframe": df,
+                        "row_count": len(rows),
+                        "columns": columns,
+                        "execution_time": time.time() - start_time,
+                        "sql": sql,
                     }
                 else:
-                    # For non-SELECT statements, just get affected rows if possible
+                    # For non-data-returning statements (INSERT, UPDATE, DELETE, CREATE, etc.)
                     cursor.fetchall()  # Consume any results
                     result = {
-                        'type': 'command',
-                        'dataframe': pd.DataFrame(),
-                        'row_count': None,
-                        'columns': [],
-                        'execution_time': time.time() - start_time,
-                        'sql': sql,
-                        'message': f"Command executed successfully"
+                        "type": "command",
+                        "dataframe": pd.DataFrame(),
+                        "row_count": None,
+                        "columns": [],
+                        "execution_time": time.time() - start_time,
+                        "sql": sql,
+                        "message": f"Command executed successfully",
                     }
-                
+
                 cursor.close()
                 return result
-                
+
         except Exception as e:
             return {
-                'type': 'error',
-                'error': str(e),
-                'execution_time': time.time() - start_time,
-                'sql': sql
+                "type": "error",
+                "error": str(e),
+                "execution_time": time.time() - start_time,
+                "sql": sql,
             }
-    
+
     def _format_execution_time(self, seconds: float) -> str:
         """Format execution time in a human-readable way."""
         if seconds < 0.001:
@@ -437,35 +455,35 @@ class SQLMagic(Magics):
             return f"{seconds*1000:.1f}ms"
         else:
             return f"{seconds:.2f}s"
-    
+
     def _format_dataframe_for_display(self, df: pd.DataFrame) -> str:
         """Format DataFrame with proper text overflow handling."""
         if df.empty:
             return "<p>No data to display</p>"
-        
+
         # Create custom HTML table with proper text handling
-        html_parts = ['<table>']
-        
+        html_parts = ["<table>"]
+
         # Header
-        html_parts.append('<thead><tr>')
+        html_parts.append("<thead><tr>")
         for col in df.columns:
-            html_parts.append(f'<th>{col}</th>')
-        html_parts.append('</tr></thead>')
-        
+            html_parts.append(f"<th>{col}</th>")
+        html_parts.append("</tr></thead>")
+
         # Body
-        html_parts.append('<tbody>')
+        html_parts.append("<tbody>")
         for _, row in df.iterrows():
-            html_parts.append('<tr>')
+            html_parts.append("<tr>")
             for col in df.columns:
                 value = row[col]
                 if pd.isna(value):
-                    cell_content = '<em>NULL</em>'
-                    cell_class = ''
+                    cell_content = "<em>NULL</em>"
+                    cell_class = ""
                 else:
                     value_str = str(value)
                     if len(value_str) > 100:
                         # Long text - use expandable format
-                        short_text = value_str[:97] + '...'
+                        short_text = value_str[:97] + "..."
                         cell_content = f'<span title="{value_str}">{short_text}</span>'
                         cell_class = 'class="long-text"'
                     elif len(value_str) > 50:
@@ -475,120 +493,141 @@ class SQLMagic(Magics):
                     else:
                         # Short text - display normally
                         cell_content = value_str
-                        cell_class = ''
-                
-                html_parts.append(f'<td {cell_class}>{cell_content}</td>')
-            html_parts.append('</tr>')
-        html_parts.append('</tbody>')
-        html_parts.append('</table>')
-        
-        return ''.join(html_parts)
-    
-    def _display_result(self, result: Dict[str, Any], statement_num: int = 1, total_statements: int = 1):
+                        cell_class = ""
+
+                html_parts.append(f"<td {cell_class}>{cell_content}</td>")
+            html_parts.append("</tr>")
+        html_parts.append("</tbody>")
+        html_parts.append("</table>")
+
+        return "".join(html_parts)
+
+    def _display_result(
+        self, result: Dict[str, Any], statement_num: int = 1, total_statements: int = 1
+    ):
         """Display query result with beautiful formatting."""
-        minimal_mode = self.sql_config.get('minimal_mode', False)
-        
-        if result['type'] == 'error':
+        minimal_mode = self.isql_config.get("minimal_mode", False)
+
+        if result["type"] == "error":
             self._display_error(result, statement_num, total_statements)
             return
-        
+
         # Create container
         container_class = "clickhouse-container"
-        header_class = "clickhouse-minimal-header" if minimal_mode else "clickhouse-header"
-        content_class = "clickhouse-minimal-content" if minimal_mode else "clickhouse-content"
+        header_class = (
+            "clickhouse-minimal-header" if minimal_mode else "clickhouse-header"
+        )
+        content_class = (
+            "clickhouse-minimal-content" if minimal_mode else "clickhouse-content"
+        )
         stats_class = "clickhouse-minimal-stats" if minimal_mode else "clickhouse-stats"
-        
+
         # Header
         if total_statements > 1:
             title = f"Query {statement_num}/{total_statements}"
         else:
             title = "ClickHouse Query Result"
-        
+
         logo_html = "" if minimal_mode else self._create_clickhouse_logo_svg()
-        
+
         html_parts = [f'<div class="{container_class}">']
         html_parts.append(f'<div class="{header_class}">{logo_html}{title}</div>')
-        
+
         # Content
         html_parts.append(f'<div class="{content_class}">')
-        
-        if result['type'] == 'select' and not result['dataframe'].empty:
+
+        if result["type"] == "select" and not result["dataframe"].empty:
             # Show SQL query if more than one statement
             if total_statements > 1:
-                html_parts.append(f'<div class="clickhouse-query">{result["sql"]}</div>')
-            
+                html_parts.append(
+                    f'<div class="clickhouse-query">{result["sql"]}</div>'
+                )
+
             # Display DataFrame
-            df = result['dataframe']
-            max_rows = self.sql_config.get('max_rows_display', 100)
-            
+            df = result["dataframe"]
+            max_rows = self.isql_config.get("max_rows_display", 100)
+
             if len(df) > max_rows:
                 display_df = df.head(max_rows)
                 truncated_msg = f'<div class="clickhouse-truncated">Showing first {max_rows} of {len(df)} rows</div>'
             else:
                 display_df = df
                 truncated_msg = ""
-            
+
             # Use custom formatter for better display
             table_html = self._format_dataframe_for_display(display_df)
-            
+
             html_parts.append('<div class="clickhouse-results">')
             html_parts.append(table_html)
-            html_parts.append('</div>')
+            html_parts.append("</div>")
             html_parts.append(truncated_msg)
-            
-        elif result['type'] == 'command':
+
+        elif result["type"] == "command":
             html_parts.append(f'<div class="clickhouse-success">')
             html_parts.append(f'<strong>✓ {result["message"]}</strong>')
             if total_statements > 1:
-                html_parts.append(f'<div class="clickhouse-query" style="margin-top: 8px;">{result["sql"]}</div>')
-            html_parts.append('</div>')
-        
+                html_parts.append(
+                    f'<div class="clickhouse-query" style="margin-top: 8px;">{result["sql"]}</div>'
+                )
+            html_parts.append("</div>")
+
         # Stats footer
-        if self.sql_config.get('show_execution_time', True) or self.sql_config.get('show_row_count', True):
+        if self.isql_config.get("show_execution_time", True) or self.isql_config.get(
+            "show_row_count", True
+        ):
             stats_parts = []
-            
-            if self.sql_config.get('show_execution_time', True):
-                exec_time = self._format_execution_time(result['execution_time'])
+
+            if self.isql_config.get("show_execution_time", True):
+                exec_time = self._format_execution_time(result["execution_time"])
                 stats_parts.append(f"⚡ {exec_time}")
-            
-            if self.sql_config.get('show_row_count', True) and result['row_count'] is not None:
-                if result['row_count'] == 1:
+
+            if (
+                self.isql_config.get("show_row_count", True)
+                and result["row_count"] is not None
+            ):
+                if result["row_count"] == 1:
                     stats_parts.append(f"📊 {result['row_count']:,} row")
                 else:
                     stats_parts.append(f"📊 {result['row_count']:,} rows")
-            
-            if result['type'] == 'select' and not result['dataframe'].empty:
+
+            if result["type"] == "select" and not result["dataframe"].empty:
                 # Add export button with unique ID
                 export_id = f"export_{int(time.time() * 1000)}_{statement_num}"
                 export_btn = f'<button class="clickhouse-button" onclick="downloadCSV(\'{export_id}\')">Export CSV</button>'
                 stats_parts.append(export_btn)
-                
+
                 # Store DataFrame for export
-                if not hasattr(self, '_export_data'):
+                if not hasattr(self, "_export_data"):
                     self._export_data = {}
-                self._export_data[export_id] = result['dataframe']
-            
+                self._export_data[export_id] = result["dataframe"]
+
             if stats_parts:
-                stats_html = ' • '.join(stats_parts)
+                stats_html = " • ".join(stats_parts)
                 html_parts.append(f'<div class="{stats_class}">')
-                html_parts.append(f'<span>{stats_html}</span>')
-                html_parts.append('</div>')
-        
-        html_parts.append('</div>')  # Close content
-        html_parts.append('</div>')  # Close container
-        
-        display(HTML(''.join(html_parts)))
-        
+                html_parts.append(f"<span>{stats_html}</span>")
+                html_parts.append("</div>")
+
+        html_parts.append("</div>")  # Close content
+        html_parts.append("</div>")  # Close container
+
+        display(HTML("".join(html_parts)))
+
         # Add export functionality for DataFrames
-        if result['type'] == 'select' and not result['dataframe'].empty:
+        if result["type"] == "select" and not result["dataframe"].empty:
             export_id = f"export_{int(time.time() * 1000)}_{statement_num}"
-            self._add_export_script(result['dataframe'], export_id)
-    
-    def _display_error(self, result: Dict[str, Any], statement_num: int = 1, total_statements: int = 1):
+            self._add_export_script(result["dataframe"], export_id)
+
+    def _display_error(
+        self, result: Dict[str, Any], statement_num: int = 1, total_statements: int = 1
+    ):
         """Display error with beautiful formatting."""
-        title = f"Query {statement_num}/{total_statements} Error" if total_statements > 1 else "Query Error"
-        
-        html = f'''
+        title = (
+            f"Query {statement_num}/{total_statements} Error"
+            if total_statements > 1
+            else "Query Error"
+        )
+
+        html = f"""
         <div class="clickhouse-error">
             <div class="clickhouse-error-header">
                 ❌ {title}
@@ -599,17 +638,23 @@ class SQLMagic(Magics):
                 Execution time: {self._format_execution_time(result["execution_time"])}
             </div>
         </div>
-        '''
+        """
         display(HTML(html))
-    
+
     def _add_export_script(self, df: pd.DataFrame, export_id: str):
         """Add JavaScript for CSV export functionality."""
         # Escape special characters properly
         csv_data = df.to_csv(index=False)
         # Escape for JavaScript string
-        csv_escaped = csv_data.replace('\\', '\\\\').replace('`', '\\`').replace('${', '\\${').replace('\n', '\\n').replace('\r', '\\r')
-        
-        js_code = f'''
+        csv_escaped = (
+            csv_data.replace("\\", "\\\\")
+            .replace("`", "\\`")
+            .replace("${", "\\${")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+        )
+
+        js_code = f"""
         <script>
         function downloadCSV(exportId) {{
             const csvData = `{csv_escaped}`;
@@ -627,139 +672,184 @@ class SQLMagic(Magics):
             }}
         }}
         </script>
-        '''
+        """
         display(HTML(js_code))
-    
+
     @magic_arguments()
-    @argument('--limit', '-l', type=int, help='Limit number of rows returned')
-    @argument('--cache', '-c', action='store_true', help='Cache the result')
-    @argument('--minimal', '-m', action='store_true', help='Use minimal display mode')
-    @argument('--export', '-e', type=str, choices=['csv', 'json', 'excel'], help='Auto-export format')
-    @argument('--connection', type=str, help='Use specific connection')
+    @argument("--limit", "-l", type=int, help="Limit number of rows returned")
+    @argument("--cache", "-c", action="store_true", help="Cache the result")
+    @argument("--minimal", "-m", action="store_true", help="Use minimal display mode")
+    @argument(
+        "--export",
+        "-e",
+        type=str,
+        choices=["csv", "json", "excel"],
+        help="Auto-export format",
+    )
+    @argument("--connection", type=str, help="Use specific connection")
     @line_cell_magic
     def sql(self, line, cell=None):
         """
         Execute ClickHouse SQL query from line or cell magic.
-        
+
         Usage:
             %sql SELECT * FROM table LIMIT 10
             %sql --limit 5 SELECT * FROM users
             %sql --minimal SELECT count(*) FROM transactions
-            
+
             %%sql
             SELECT count(*) as total FROM transactions;
             SELECT avg(amount) as avg_amount FROM transactions WHERE date > '2023-01-01';
         """
-        args = parse_argstring(self.sql, line)
-        
-        # Determine SQL content
-        if cell is None:
-            # Line magic - extract SQL from remaining line
-            sql = line
-            if '--' in line:
-                # Remove arguments from SQL
-                parts = line.split('--')
-                if parts[0].strip():
-                    sql = parts[0].strip()
+        # Split line into arguments and SQL
+        import shlex
+
+        # Check if line contains arguments (starts with --)
+        if line.strip().startswith("--"):
+            # Parse arguments and extract SQL
+            try:
+                # Split the line into tokens
+                tokens = shlex.split(line)
+
+                # Find where SQL starts (first token that doesn't start with - and isn't a value for an argument)
+                sql_start_idx = 0
+                i = 0
+                while i < len(tokens):
+                    token = tokens[i]
+                    if token.startswith("-"):
+                        # This is an argument
+                        if token in ["--limit", "-l", "--export", "-e", "--connection"]:
+                            # These arguments take values, skip the next token too
+                            i += 2
+                        else:
+                            # These are flag arguments (--cache, --minimal)
+                            i += 1
+                    else:
+                        # This is where SQL starts
+                        sql_start_idx = i
+                        break
+
+                # Reconstruct the argument line (everything before SQL)
+                if sql_start_idx > 0:
+                    arg_line = " ".join(tokens[:sql_start_idx])
+                    sql = " ".join(tokens[sql_start_idx:])
                 else:
-                    # Arguments at the beginning, find SQL after last argument
-                    import shlex
-                    tokens = shlex.split(line)
-                    sql_start = 0
-                    for i, token in enumerate(tokens):
-                        if not token.startswith('-') and i > 0 and not tokens[i-1].startswith('-'):
-                            sql_start = i
-                            break
-                    sql = ' '.join(tokens[sql_start:]) if sql_start > 0 else ''
+                    arg_line = ""
+                    sql = line
+
+                # Parse arguments
+                args = parse_argstring(self.sql, arg_line)
+
+            except Exception:
+                # If parsing fails, treat entire line as SQL with no arguments
+                args = parse_argstring(self.sql, "")
+                sql = line
         else:
-            # Cell magic - use cell content
+            # No arguments, treat entire line as SQL
+            args = parse_argstring(self.sql, "")
+            sql = line
+
+        # For cell magic, use cell content as SQL
+        if cell is not None:
             sql = cell
-        
+
         return self._execute_sql(sql, args)
-    
+
     def _execute_sql(self, sql: str, args):
         """Execute SQL with given arguments."""
         if not sql.strip():
-            display(HTML('<div style="color: #666; font-style: italic; padding: 10px;">No SQL provided</div>'))
+            display(
+                HTML(
+                    '<div style="color: #666; font-style: italic; padding: 10px;">No SQL provided</div>'
+                )
+            )
             return
-        
+
         # Apply configurations from arguments
-        original_config = self.sql_config.copy()
-        
+        original_config = self.isql_config.copy()
+
         if args.minimal:
-            self.sql_config['minimal_mode'] = True
+            self.isql_config["minimal_mode"] = True
         if args.limit:
-            self.sql_config['auto_limit'] = args.limit
+            self.isql_config["auto_limit"] = args.limit
         if args.cache:
-            self.sql_config['cache_results'] = True
-        
+            self.isql_config["cache_results"] = True
+
         try:
             # Get connection
             connection = self._get_connection()
-            
+
             # Parse SQL statements
             statements = self._parse_sql_statements(sql)
-            
+
             if not statements:
-                display(HTML('<div style="color: #666; font-style: italic; padding: 10px;">No valid SQL statements found</div>'))
+                display(
+                    HTML(
+                        '<div style="color: #666; font-style: italic; padding: 10px;">No valid SQL statements found</div>'
+                    )
+                )
                 return
-            
+
             # Execute statements
             results = []
             total_statements = len(statements)
-            
+
             for i, statement in enumerate(statements, 1):
                 # Apply auto-limit for SELECT statements if specified
-                if (args.limit and 
-                    statement.strip().upper().startswith('SELECT') and 
-                    'LIMIT' not in statement.upper()):
+                if (
+                    args.limit
+                    and statement.strip().upper().startswith("SELECT")
+                    and "LIMIT" not in statement.upper()
+                ):
                     statement = f"{statement.rstrip(';')} LIMIT {args.limit}"
-                
+
                 result = self._execute_single_statement(statement, connection)
                 results.append(result)
-                
+
                 # Display result immediately
                 self._display_result(result, i, total_statements)
-                
+
                 # Store in history
-                self.query_history.append({
-                    'sql': statement,
-                    'result': result,
-                    'timestamp': datetime.now()
-                })
-            
+                self.query_history.append(
+                    {"sql": statement, "result": result, "timestamp": datetime.now()}
+                )
+
             # Return DataFrame(s) for further use
-            if len(results) == 1 and results[0]['type'] == 'select':
-                self.last_result = results[0]['dataframe']
-                return results[0]['dataframe']
+            if len(results) == 1 and results[0]["type"] == "select":
+                self.last_result = results[0]["dataframe"]
+                return results[0]["dataframe"]
             elif len(results) > 1:
-                select_results = [r['dataframe'] for r in results if r['type'] == 'select' and not r['dataframe'].empty]
+                select_results = [
+                    r["dataframe"]
+                    for r in results
+                    if r["type"] == "select" and not r["dataframe"].empty
+                ]
                 if select_results:
                     self.last_result = select_results
                     return select_results
-            
+
             return None
-            
+
         except Exception as e:
-            error_html = f'''
+            error_html = f"""
             <div class="clickhouse-error">
                 <div class="clickhouse-error-header">
                     ❌ Connection Error
                 </div>
                 <div class="clickhouse-error-message">{str(e)}</div>
             </div>
-            '''
+            """
             display(HTML(error_html))
             return None
         finally:
             # Restore original configuration
-            self.sql_config = original_config
-    
+            self.isql_config = original_config
+
     @line_magic
     def sql_config(self, line):
         """
         Configure SQL magic settings.
-        
+
         Usage:
             %sql_config max_rows_display=50
             %sql_config minimal_mode=True
@@ -785,7 +875,11 @@ class SQLMagic(Magics):
                         </thead>
                         <tbody>
             """
-            for key, value in self.sql_config.items():
+
+            # Access the configuration dictionary directly
+            config_dict = getattr(self, "isql_config", {})
+
+            for key, value in config_dict.items():
                 config_html += f"""
                             <tr>
                                 <td style="padding: 8px 10px; border-bottom: 1px solid #f1f5f9;"><strong>{key}</strong></td>
@@ -800,44 +894,52 @@ class SQLMagic(Magics):
             """
             display(HTML(config_html))
             return
-        
+
         # Parse configuration changes
-        for item in line.split(','):
-            if '=' in item:
-                key, value = item.split('=', 1)
+        config_dict = getattr(self, "isql_config", {})
+
+        for item in line.split(","):
+            if "=" in item:
+                key, value = item.split("=", 1)
                 key = key.strip()
                 value = value.strip()
-                
+
                 # Convert value to appropriate type
-                if value.lower() in ('true', 'false'):
-                    value = value.lower() == 'true'
+                if value.lower() in ("true", "false"):
+                    value = value.lower() == "true"
                 elif value.isdigit():
                     value = int(value)
-                
-                if key in self.sql_config:
-                    self.sql_config[key] = value
+
+                if key in config_dict:
+                    config_dict[key] = value
                     print(f"✓ Set {key} = {value}")
                 else:
                     print(f"✗ Unknown configuration key: {key}")
-    
+            else:
+                print(f"✗ Invalid format: {item}. Use key=value format.")
+
     @line_magic
     def sql_history(self, line):
         """
         Show query history.
-        
+
         Usage:
             %sql_history
             %sql_history 5  # Show last 5 queries
         """
         limit = int(line.strip()) if line.strip().isdigit() else 10
-        
+
         if not self.query_history:
-            display(HTML('<div style="color: #666; font-style: italic; padding: 10px;">No query history available</div>'))
+            display(
+                HTML(
+                    '<div style="color: #666; font-style: italic; padding: 10px;">No query history available</div>'
+                )
+            )
             return
-        
+
         recent_queries = self.query_history[-limit:]
-        
-        html = '''
+
+        html = """
         <div class="clickhouse-container">
             <div class="clickhouse-header">
                 <svg class="clickhouse-logo" viewBox="0 0 24 24" fill="none">
@@ -846,17 +948,21 @@ class SQLMagic(Magics):
                 📜 Query History
             </div>
             <div class="clickhouse-content">
-        '''
-        
+        """
+
         for i, entry in enumerate(reversed(recent_queries), 1):
-            timestamp = entry['timestamp'].strftime('%H:%M:%S')
-            sql_preview = entry['sql'][:100] + '...' if len(entry['sql']) > 100 else entry['sql']
-            
-            status = "✓" if entry['result']['type'] != 'error' else "✗"
-            status_color = "#22543d" if entry['result']['type'] != 'error' else "#c53030"
-            exec_time = self._format_execution_time(entry['result']['execution_time'])
-            
-            html += f'''
+            timestamp = entry["timestamp"].strftime("%H:%M:%S")
+            sql_preview = (
+                entry["sql"][:100] + "..." if len(entry["sql"]) > 100 else entry["sql"]
+            )
+
+            status = "✓" if entry["result"]["type"] != "error" else "✗"
+            status_color = (
+                "#22543d" if entry["result"]["type"] != "error" else "#c53030"
+            )
+            exec_time = self._format_execution_time(entry["result"]["execution_time"])
+
+            html += f"""
             <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                     <span style="color: {status_color};"><strong>{status} Query {i}</strong> - {timestamp}</span>
@@ -864,47 +970,49 @@ class SQLMagic(Magics):
                 </div>
                 <div class="clickhouse-query" style="margin: 0;">{sql_preview}</div>
             </div>
-            '''
-        
-        html += '</div></div>'
+            """
+
+        html += "</div></div>"
         display(HTML(html))
-    
+
     @line_magic
     def sql_tables(self, line):
         """
         Show available tables in the current database.
-        
+
         Usage:
             %sql_tables
             %sql_tables database_name
         """
-        database = line.strip() if line.strip() else 'dubai_real_estate'
-        
+        database = line.strip() if line.strip() else "dubai_real_estate"
+
         sql = f"SHOW TABLES FROM `{database}`"
-        return self._execute_sql(sql, type('Args', (), {'minimal': False, 'limit': None, 'cache': False})())
+        return self._execute_sql(
+            sql, type("Args", (), {"minimal": False, "limit": None, "cache": False})()
+        )
 
 
 def load_ipython_extension(ipython):
     """Load the SQL magic extension."""
     magic_instance = SQLMagic(ipython)
-    ipython.register_magic_function(magic_instance.sql, 'line_cell', 'sql')
-    ipython.register_magic_function(magic_instance.sql_config, 'line', 'sql_config')
-    ipython.register_magic_function(magic_instance.sql_history, 'line', 'sql_history')
-    ipython.register_magic_function(magic_instance.sql_tables, 'line', 'sql_tables')
+    ipython.register_magic_function(magic_instance.sql, "line_cell", "sql")
+    ipython.register_magic_function(magic_instance.sql_config, "line", "sql_config")
+    ipython.register_magic_function(magic_instance.sql_history, "line", "sql_history")
+    ipython.register_magic_function(magic_instance.sql_tables, "line", "sql_tables")
 
 
 def unload_ipython_extension(ipython):
     """Unload the SQL magic extension."""
     # Remove registered magic functions
     magic_manager = ipython.magics_manager
-    if hasattr(magic_manager, 'magics'):
+    if hasattr(magic_manager, "magics"):
         # Remove line and cell magics
-        if 'sql' in magic_manager.magics.get('line', {}):
-            del magic_manager.magics['line']['sql']
-        if 'sql' in magic_manager.magics.get('cell', {}):
-            del magic_manager.magics['cell']['sql']
-        
+        if "sql" in magic_manager.magics.get("line", {}):
+            del magic_manager.magics["line"]["sql"]
+        if "sql" in magic_manager.magics.get("cell", {}):
+            del magic_manager.magics["cell"]["sql"]
+
         # Remove line magics
-        for magic_name in ['sql_config', 'sql_history', 'sql_tables']:
-            if magic_name in magic_manager.magics.get('line', {}):
-                del magic_manager.magics['line'][magic_name]
+        for magic_name in ["sql_config", "sql_history", "sql_tables"]:
+            if magic_name in magic_manager.magics.get("line", {}):
+                del magic_manager.magics["line"][magic_name]
