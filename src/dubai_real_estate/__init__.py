@@ -13,7 +13,8 @@ from .connection import get_connection, create_connection, setup_default_connect
 from .sql import get_table_sql, get_function_sql, SQLParser
 from .install import (
     DEFAULT_DATABASE, create_database, install_database, 
-    install_functions, install_tables, install_views
+    install_functions, install_tables, install_views,
+    install_prod_tables, drop_staging_and_views
 )
 
 __all__ = [
@@ -41,4 +42,6 @@ __all__ = [
     "install_functions",
     "install_tables",
     "install_views",
+    "install_prod_tables",
+    "drop_staging_and_views",
 ]

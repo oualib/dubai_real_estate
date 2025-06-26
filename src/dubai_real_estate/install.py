@@ -8,6 +8,8 @@ This module provides functions to install the complete Dubai Real Estate databas
 4. Ingest data into staging tables
 5. Create clean views with data transformations
 6. Create final production views
+7. Create production tables (CREATE_PROD + INGEST_PROD)
+8. Clean up staging tables and views
 
 The API automatically uses the auto connection when available, making it simple to use.
 
@@ -22,9 +24,14 @@ Usage:
     success = install_database()  # Uses default database 'dubai_real_estate'
     success = install_database("dld_prod")  # Custom database name
     
+    # Production deployment with cleanup
+    success = install_database(include_prod_tables=True, cleanup_after_prod=True)
+    
     # Install specific components
     install_functions()
     install_tables("dld_test", table_names=["dld_transactions", "dld_units"])
+    install_prod_tables()  # Final production tables
+    drop_staging_and_views()  # Cleanup
     
     # Get installation status
     status = get_installation_status()  # Uses default database
@@ -36,7 +43,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from .connection import get_connection, BaseConnection
-from .sql import SQLParser, get_function_sql, get_table_sql
+from .sql import SQLParser, get_table_sql, get_function_sql
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +269,7 @@ def install_tables(
     table_names: Optional[List[str]] = None,
     dry_run: bool = False
 ) -> Dict[str, Any]:
-    """Install tables (create + ingest) using auto connection.
+    """Install staging tables (CREATE + INGEST) using auto connection.
     
     Args:
         database_name: Target database name (default: 'dubai_real_estate')
@@ -282,7 +289,7 @@ def install_tables(
     if table_names is None:
         table_names = TABLE_INSTALL_ORDER
         
-    logger.info(f"Installing tables in database: {database_name}")
+    logger.info(f"Installing staging tables in database: {database_name}")
     
     stats = {
         'tables_created': 0,
@@ -307,7 +314,7 @@ def install_tables(
             table_stats = {'table': table_name, 'created': False, 'ingested': False, 'error': None}
             
             try:
-                logger.info(f"Installing table: {table_name}")
+                logger.info(f"Installing staging table: {table_name}")
                 
                 # 1. Create table structure
                 create_sql = get_table_sql(table_name, "CREATE")
@@ -345,8 +352,8 @@ def install_tables(
                 
             stats['tables'].append(table_stats)
     
-    logger.info(f"Tables created: {stats['tables_created']}")
-    logger.info(f"Tables ingested: {stats['tables_ingested']}")
+    logger.info(f"Staging tables created: {stats['tables_created']}")
+    logger.info(f"Staging tables ingested: {stats['tables_ingested']}")
     return stats
 
 
@@ -452,11 +459,217 @@ def install_views(
     return stats
 
 
+def install_prod_tables(
+    database_name: str = DEFAULT_DATABASE,
+    table_names: Optional[List[str]] = None,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Install production tables (CREATE_PROD + INGEST_PROD) using auto connection.
+    
+    Args:
+        database_name: Target database name (default: 'dubai_real_estate')
+        table_names: Specific tables to install (default: all in order)
+        dry_run: If True, show what would be done without executing
+        
+    Returns:
+        Dict with installation results and statistics
+        
+    Example:
+        >>> from dubai_real_estate.install import install_prod_tables
+        >>> result = install_prod_tables(table_names=["dld_transactions", "dld_units"])
+        >>> print(f"Created {result['prod_tables_created']} production tables")
+    """
+    connection = _get_connection()
+        
+    if table_names is None:
+        table_names = TABLE_INSTALL_ORDER
+        
+    logger.info(f"Installing production tables in database: {database_name}")
+    
+    sql_parser = SQLParser()
+    stats = {
+        'prod_tables_created': 0,
+        'prod_tables_ingested': 0, 
+        'errors': 0,
+        'tables': []
+    }
+    
+    with connection:
+        # Install production tables
+        for table_name in table_names:
+            table_stats = {'table': table_name, 'created': False, 'ingested': False, 'error': None}
+            
+            try:
+                # Check if CREATE_PROD exists
+                options = sql_parser.list_table_options(table_name)
+                if 'create_prod' not in [opt.lower() for opt in options]:
+                    logger.debug(f"No CREATE_PROD SQL for {table_name}")
+                    continue
+                    
+                logger.info(f"Installing production table: {table_name}")
+                
+                # 1. Create production table structure
+                create_sql = get_table_sql(table_name, "CREATE_PROD")
+                formatted_sql = create_sql.format(
+                    dld_database=database_name,
+                    dld_table=table_name
+                )
+                
+                if _execute_sql(connection, formatted_sql, f"Create production table {table_name}", dry_run):
+                    stats['prod_tables_created'] += 1
+                    table_stats['created'] = True
+                else:
+                    stats['errors'] += 1
+                    table_stats['error'] = "Failed to create production table"
+                    continue
+                
+                # 2. Ingest data into production table
+                # Check if INGEST_PROD exists
+                if 'ingest_prod' in [opt.lower() for opt in options]:
+                    ingest_sql = get_table_sql(table_name, "INGEST_PROD") 
+                    formatted_sql = ingest_sql.format(
+                        dld_database=database_name,
+                        dld_table=table_name
+                    )
+                    
+                    if _execute_sql(connection, formatted_sql, f"Ingest data into production table {table_name}", dry_run):
+                        stats['prod_tables_ingested'] += 1
+                        table_stats['ingested'] = True
+                    else:
+                        stats['errors'] += 1
+                        table_stats['error'] = "Failed to ingest data into production table"
+                else:
+                    logger.debug(f"No INGEST_PROD SQL for {table_name}")
+                    
+            except Exception as e:
+                logger.error(f"Failed to install production table {table_name}: {e}")
+                stats['errors'] += 1
+                table_stats['error'] = str(e)
+                
+            stats['tables'].append(table_stats)
+    
+    logger.info(f"Production tables created: {stats['prod_tables_created']}")
+    logger.info(f"Production tables ingested: {stats['prod_tables_ingested']}")
+    return stats
+
+
+def drop_staging_and_views(
+    database_name: str = DEFAULT_DATABASE,
+    table_names: Optional[List[str]] = None,
+    drop_staging: bool = True,
+    drop_views: bool = True,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Drop staging tables and views to clean up after production deployment.
+    
+    Args:
+        database_name: Target database name (default: 'dubai_real_estate')
+        table_names: Specific tables to clean up (default: all)
+        drop_staging: Whether to drop staging tables (default: True)
+        drop_views: Whether to drop views (default: True)
+        dry_run: If True, show what would be done without executing
+        
+    Returns:
+        Dict with cleanup results and statistics
+        
+    Example:
+        >>> from dubai_real_estate.install import drop_staging_and_views
+        >>> # Drop everything except production tables
+        >>> result = drop_staging_and_views()
+        >>> print(f"Dropped {result['staging_dropped']} staging tables")
+        >>>
+        >>> # Drop only views, keep staging for debugging
+        >>> result = drop_staging_and_views(drop_staging=False, drop_views=True)
+    """
+    connection = _get_connection()
+        
+    if table_names is None:
+        table_names = TABLE_INSTALL_ORDER
+        
+    logger.info(f"Cleaning up database: {database_name}")
+    if drop_staging:
+        logger.info("Will drop staging tables")
+    if drop_views:
+        logger.info("Will drop views")
+    
+    stats = {
+        'staging_dropped': 0,
+        'clean_views_dropped': 0,
+        'prod_views_dropped': 0,
+        'errors': 0,
+        'tables': []
+    }
+    
+    with connection:
+        for table_name in table_names:
+            table_stats = {
+                'table': table_name, 
+                'staging_dropped': False, 
+                'clean_view_dropped': False,
+                'prod_view_dropped': False,
+                'errors': []
+            }
+            
+            # Drop clean view
+            if drop_views:
+                try:
+                    drop_sql = f"DROP VIEW IF EXISTS `{database_name}`.`{table_name}_staging_clean`"
+                    if _execute_sql(connection, drop_sql, f"Drop clean view {table_name}_staging_clean", dry_run):
+                        stats['clean_views_dropped'] += 1
+                        table_stats['clean_view_dropped'] = True
+                    else:
+                        stats['errors'] += 1
+                        table_stats['errors'].append("Failed to drop clean view")
+                except Exception as e:
+                    logger.error(f"Failed to drop clean view for {table_name}: {e}")
+                    stats['errors'] += 1
+                    table_stats['errors'].append(f"Clean view drop error: {e}")
+            
+            # Drop prod view
+            if drop_views:
+                try:
+                    drop_sql = f"DROP VIEW IF EXISTS `{database_name}`.`{table_name}_view`"
+                    if _execute_sql(connection, drop_sql, f"Drop prod view {table_name}_view", dry_run):
+                        stats['prod_views_dropped'] += 1
+                        table_stats['prod_view_dropped'] = True
+                    else:
+                        stats['errors'] += 1
+                        table_stats['errors'].append("Failed to drop prod view")
+                except Exception as e:
+                    logger.error(f"Failed to drop prod view for {table_name}: {e}")
+                    stats['errors'] += 1
+                    table_stats['errors'].append(f"Prod view drop error: {e}")
+            
+            # Drop staging table
+            if drop_staging:
+                try:
+                    drop_sql = f"DROP TABLE IF EXISTS `{database_name}`.`{table_name}_staging`"
+                    if _execute_sql(connection, drop_sql, f"Drop staging table {table_name}_staging", dry_run):
+                        stats['staging_dropped'] += 1
+                        table_stats['staging_dropped'] = True
+                    else:
+                        stats['errors'] += 1
+                        table_stats['errors'].append("Failed to drop staging table")
+                except Exception as e:
+                    logger.error(f"Failed to drop staging table for {table_name}: {e}")
+                    stats['errors'] += 1
+                    table_stats['errors'].append(f"Staging table drop error: {e}")
+            
+            stats['tables'].append(table_stats)
+    
+    logger.info(f"Staging tables dropped: {stats['staging_dropped']}")
+    logger.info(f"Clean views dropped: {stats['clean_views_dropped']}")
+    logger.info(f"Production views dropped: {stats['prod_views_dropped']}")
+    return stats
+
+
 def install_database(
     database_name: str = DEFAULT_DATABASE,
     include_functions: bool = True,
     include_tables: bool = True,
     include_views: bool = True,
+    include_prod_tables: bool = True,
+    cleanup_after_prod: bool = True,
     table_names: Optional[List[str]] = None,
     dry_run: bool = False
 ) -> Dict[str, Any]:
@@ -465,8 +678,10 @@ def install_database(
     Args:
         database_name: Target database name (default: 'dubai_real_estate')
         include_functions: Whether to install SQL functions
-        include_tables: Whether to create and ingest tables
+        include_tables: Whether to create and ingest staging tables
         include_views: Whether to create clean and production views
+        include_prod_tables: Whether to create final production tables
+        cleanup_after_prod: Whether to drop staging/views after creating prod tables
         table_names: Specific tables to install (default: all)
         dry_run: If True, show what would be done without executing
         
@@ -475,18 +690,19 @@ def install_database(
         
     Example:
         >>> from dubai_real_estate.install import install_database
-        >>> from dubai_real_estate.connection import create_connection
         >>> 
-        >>> # Set up connection once
-        >>> create_connection("prod", "client", host="clickhouse.company.com", set_auto=True)
-        >>> 
-        >>> # Complete installation with default database name
+        >>> # Complete staging installation
         >>> result = install_database()
-        >>> print(f"Installation {'succeeded' if result['success'] else 'failed'}")
-        >>>
-        >>> # Custom database with partial installation
+        >>> 
+        >>> # Full production deployment with cleanup
         >>> result = install_database(
-        ...     "dld_test", 
+        ...     include_prod_tables=True,
+        ...     cleanup_after_prod=True
+        ... )
+        >>>
+        >>> # Development setup (no prod tables)
+        >>> result = install_database(
+        ...     "dld_dev", 
         ...     include_views=False,
         ...     table_names=["dld_transactions", "dld_units"]
         ... )
@@ -513,6 +729,8 @@ def install_database(
         'functions': None,
         'tables': None,
         'views': None,
+        'prod_tables': None,
+        'cleanup': None,
     }
     
     try:
@@ -532,7 +750,7 @@ def install_database(
         
         # Install tables
         if include_tables:
-            logger.info("Phase 2: Installing tables...")
+            logger.info("Phase 2: Installing staging tables...")
             table_result = install_tables(database_name, table_names, dry_run=dry_run)
             overall_stats['tables'] = table_result
             overall_stats['total_errors'] += table_result['errors']
@@ -544,9 +762,25 @@ def install_database(
             overall_stats['views'] = view_result
             overall_stats['total_errors'] += view_result['errors']
         
+        # Install production tables
+        if include_prod_tables:
+            logger.info("Phase 4: Installing production tables...")
+            prod_result = install_prod_tables(database_name, table_names, dry_run=dry_run)
+            overall_stats['prod_tables'] = prod_result
+            overall_stats['total_errors'] += prod_result['errors']
+        
+        # Cleanup staging and views after production tables
+        if cleanup_after_prod and include_prod_tables:
+            logger.info("Phase 5: Cleaning up staging tables and views...")
+            cleanup_result = drop_staging_and_views(database_name, table_names, 
+                                                   drop_staging=True, drop_views=True, dry_run=dry_run)
+            overall_stats['cleanup'] = cleanup_result
+            overall_stats['total_errors'] += cleanup_result['errors']
+        
         # Validate installation
         if not dry_run and include_tables:
-            logger.info("Phase 4: Validating installation...")
+            phase_num = 6 if (include_prod_tables and cleanup_after_prod) else 5 if include_prod_tables else 4
+            logger.info(f"Phase {phase_num}: Validating installation...")
             validation_result = validate_installation(database_name, table_names)
             overall_stats['validation'] = validation_result
         
@@ -608,6 +842,7 @@ def validate_installation(
                 'staging_count': 0,
                 'clean_count': None,
                 'prod_count': None,
+                'prod_table_count': None,
                 'has_data': False
             }
             
@@ -651,6 +886,17 @@ def validate_installation(
                     table_result['prod_count'] = prod_count
                 except:
                     pass  # View doesn't exist
+                
+                # Check prod table if exists
+                try:
+                    cursor = connection.execute(
+                        f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}`"
+                    )
+                    prod_table_count = cursor.fetchone()[0]
+                    cursor.close()
+                    table_result['prod_table_count'] = prod_table_count
+                except:
+                    pass  # Table doesn't exist
                     
             except Exception as e:
                 logger.error(f"Failed to validate {table_name}: {e}")
@@ -688,6 +934,7 @@ def get_installation_status(
         'database_exists': False,
         'tables_expected': len(TABLE_INSTALL_ORDER),
         'tables_installed': 0,
+        'prod_tables_installed': 0,
         'functions_available': {},
         'tables': {}
     }
@@ -710,7 +957,9 @@ def get_installation_status(
                 'staging_exists': False,
                 'clean_view_exists': False,
                 'prod_view_exists': False,
-                'row_count': 0
+                'prod_table_exists': False,
+                'row_count': 0,
+                'prod_table_count': 0
             }
             
             # Check staging table
@@ -753,6 +1002,26 @@ def get_installation_status(
             except:
                 pass
             
+            # Check prod table
+            try:
+                cursor = connection.execute(
+                    f"EXISTS TABLE `{database_name}`.`{table_name}`"
+                )
+                table_status['prod_table_exists'] = bool(cursor.fetchone()[0])
+                cursor.close()
+                
+                if table_status['prod_table_exists']:
+                    status['prod_tables_installed'] += 1
+                    
+                    # Get prod table row count
+                    cursor = connection.execute(
+                        f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}`"
+                    )
+                    table_status['prod_table_count'] = cursor.fetchone()[0]
+                    cursor.close()
+            except:
+                pass
+            
             status['tables'][table_name] = table_status
         
         # Check functions (sample a few key ones)
@@ -789,12 +1058,20 @@ def _print_installation_summary(stats: Dict[str, Any]):
         logger.info(f"Functions installed: {stats['functions']['functions_installed']}")
     
     if stats.get('tables'):
-        logger.info(f"Tables created: {stats['tables']['tables_created']}")
-        logger.info(f"Tables ingested: {stats['tables']['tables_ingested']}")
+        logger.info(f"Staging tables created: {stats['tables']['tables_created']}")
+        logger.info(f"Staging tables ingested: {stats['tables']['tables_ingested']}")
     
     if stats.get('views'):
         logger.info(f"Clean views created: {stats['views']['clean_views_created']}")
         logger.info(f"Production views created: {stats['views']['prod_views_created']}")
+    
+    if stats.get('prod_tables'):
+        logger.info(f"Production tables created: {stats['prod_tables']['prod_tables_created']}")
+        logger.info(f"Production tables ingested: {stats['prod_tables']['prod_tables_ingested']}")
+    
+    if stats.get('cleanup'):
+        logger.info(f"Staging tables dropped: {stats['cleanup']['staging_dropped']}")
+        logger.info(f"Views dropped: {stats['cleanup']['clean_views_dropped'] + stats['cleanup']['prod_views_dropped']}")
     
     logger.info(f"Total errors: {stats['total_errors']}")
     
@@ -814,6 +1091,8 @@ __all__ = [
     'install_functions', 
     'install_tables',
     'install_views',
+    'install_prod_tables',
+    'drop_staging_and_views',
     'validate_installation',
     'get_installation_status',
     'TABLE_INSTALL_ORDER',
