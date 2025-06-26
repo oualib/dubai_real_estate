@@ -3,7 +3,8 @@ CREATE OR REPLACE VIEW
 AS
 SELECT
     transaction_id,
-    trans_group_id,
+    MAP_TRANS_GROUP_EN(trans_group_id) AS trans_group_type_english,
+    MAP_TRANS_GROUP_AR(trans_group_id) AS trans_group_type_arabic,
     procedure_id,
     instance_date,
     MAP_AREA_NAME_EN(area_id) AS area_name_english,

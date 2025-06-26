@@ -1,7 +1,8 @@
 CREATE OR REPLACE TABLE
 	"{dld_database}"."{dld_table}"(
         "transaction_id" String,
-        "trans_group_id" Nullable(Int128),
+        "trans_group_type_english" String,
+        "trans_group_type_arabic" String,
         "procedure_id" Nullable(Int128),
         "instance_date" Nullable(Date),
         "area_name_english" Nullable(String),

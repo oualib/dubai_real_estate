@@ -731,6 +731,7 @@ def install_database(
         'views': None,
         'prod_tables': None,
         'cleanup': None,
+        'validation': None,
     }
     
     try:
@@ -777,11 +778,21 @@ def install_database(
             overall_stats['cleanup'] = cleanup_result
             overall_stats['total_errors'] += cleanup_result['errors']
         
-        # Validate installation
-        if not dry_run and include_tables:
+        # Validate installation (smart validation based on what should exist)
+        if not dry_run and (include_tables or include_prod_tables):
             phase_num = 6 if (include_prod_tables and cleanup_after_prod) else 5 if include_prod_tables else 4
             logger.info(f"Phase {phase_num}: Validating installation...")
-            validation_result = validate_installation(database_name, table_names)
+            
+            # Determine what to validate based on what was installed and cleaned up
+            check_staging = include_tables and not (cleanup_after_prod and include_prod_tables)
+            check_prod = include_prod_tables
+            
+            validation_result = validate_installation(
+                database_name, 
+                table_names,
+                check_staging=check_staging,
+                check_prod=check_prod
+            )
             overall_stats['validation'] = validation_result
         
         overall_stats['success'] = overall_stats['total_errors'] == 0
@@ -802,13 +813,17 @@ def install_database(
 
 def validate_installation(
     database_name: str = DEFAULT_DATABASE,
-    table_names: Optional[List[str]] = None
+    table_names: Optional[List[str]] = None,
+    check_staging: bool = True,
+    check_prod: bool = True
 ) -> Dict[str, Any]:
     """Validate installation by checking table counts using auto connection.
     
     Args:
         database_name: Database to validate (default: 'dubai_real_estate')
         table_names: Tables to check (default: all)
+        check_staging: Whether to check staging tables (default: True)
+        check_prod: Whether to check production tables (default: True)
         
     Returns:
         Dict with validation results
@@ -831,7 +846,8 @@ def validate_installation(
         'tables_checked': 0,
         'tables_with_data': 0,
         'tables_empty': 0,
-        'total_rows': 0,
+        'total_staging_rows': 0,
+        'total_prod_rows': 0,
         'tables': []
     }
     
@@ -839,73 +855,139 @@ def validate_installation(
         for table_name in table_names:
             table_result = {
                 'name': table_name,
-                'staging_count': 0,
+                'staging_count': None,
+                'staging_exists': False,
                 'clean_count': None,
                 'prod_count': None,
                 'prod_table_count': None,
-                'has_data': False
+                'prod_table_exists': False,
+                'has_data': False,
+                'validation_errors': []
             }
             
+            # Check staging table if requested
+            if check_staging:
+                try:
+                    # First check if staging table exists
+                    cursor = connection.execute(
+                        f"EXISTS TABLE `{database_name}`.`{table_name}_staging`"
+                    )
+                    staging_exists = bool(cursor.fetchone()[0])
+                    cursor.close()
+                    table_result['staging_exists'] = staging_exists
+                    
+                    if staging_exists:
+                        cursor = connection.execute(
+                            f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}_staging`"
+                        )
+                        staging_count = cursor.fetchone()[0]
+                        cursor.close()
+                        
+                        table_result['staging_count'] = staging_count
+                        table_result['has_data'] = staging_count > 0
+                        validation_result['total_staging_rows'] += staging_count
+                        
+                        if staging_count > 0:
+                            validation_result['tables_with_data'] += 1
+                            logger.info(f"✓ {table_name}_staging: {staging_count:,} rows")
+                        else:
+                            validation_result['tables_empty'] += 1
+                            logger.warning(f"⚠ {table_name}_staging: No data")
+                    else:
+                        logger.debug(f"- {table_name}_staging: Does not exist")
+                        
+                except Exception as e:
+                    error_msg = f"Failed to validate {table_name}_staging: {e}"
+                    logger.error(error_msg)
+                    table_result['validation_errors'].append(error_msg)
+            
+            # Check production table if requested
+            if check_prod:
+                try:
+                    # First check if prod table exists
+                    cursor = connection.execute(
+                        f"EXISTS TABLE `{database_name}`.`{table_name}`"
+                    )
+                    prod_table_exists = bool(cursor.fetchone()[0])
+                    cursor.close()
+                    table_result['prod_table_exists'] = prod_table_exists
+                    
+                    if prod_table_exists:
+                        cursor = connection.execute(
+                            f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}`"
+                        )
+                        prod_table_count = cursor.fetchone()[0]
+                        cursor.close()
+                        table_result['prod_table_count'] = prod_table_count
+                        validation_result['total_prod_rows'] += prod_table_count
+                        
+                        # If no staging data but prod data exists, mark as having data
+                        if not table_result['has_data'] and prod_table_count > 0:
+                            table_result['has_data'] = True
+                            validation_result['tables_with_data'] += 1
+                            if table_result['staging_count'] is None:  # No staging checked
+                                validation_result['tables_empty'] = max(0, validation_result['tables_empty'])
+                        
+                        logger.info(f"✓ {table_name} (prod): {prod_table_count:,} rows")
+                    else:
+                        logger.debug(f"- {table_name} (prod): Does not exist")
+                        
+                except Exception as e:
+                    error_msg = f"Failed to validate {table_name} (prod): {e}"
+                    logger.error(error_msg)
+                    table_result['validation_errors'].append(error_msg)
+            
+            # Check clean view if exists (optional)
             try:
-                # Check staging table
                 cursor = connection.execute(
-                    f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}_staging`"
+                    f"EXISTS TABLE `{database_name}`.`{table_name}_staging_clean`"
                 )
-                staging_count = cursor.fetchone()[0]
+                clean_view_exists = bool(cursor.fetchone()[0])
                 cursor.close()
                 
-                table_result['staging_count'] = staging_count
-                table_result['has_data'] = staging_count > 0
-                validation_result['total_rows'] += staging_count
-                
-                if staging_count > 0:
-                    validation_result['tables_with_data'] += 1
-                    logger.info(f"✓ {table_name}_staging: {staging_count:,} rows")
-                else:
-                    validation_result['tables_empty'] += 1
-                    logger.warning(f"⚠ {table_name}_staging: No data")
-                
-                # Check clean view if exists
-                try:
+                if clean_view_exists:
                     cursor = connection.execute(
                         f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}_staging_clean`"
                     )
                     clean_count = cursor.fetchone()[0]
                     cursor.close()
                     table_result['clean_count'] = clean_count
-                except:
-                    pass  # View doesn't exist
+            except:
+                pass  # View doesn't exist or error - not critical
+            
+            # Check prod view if exists (optional)
+            try:
+                cursor = connection.execute(
+                    f"EXISTS TABLE `{database_name}`.`{table_name}_view`"
+                )
+                prod_view_exists = bool(cursor.fetchone()[0])
+                cursor.close()
                 
-                # Check prod view if exists
-                try:
+                if prod_view_exists:
                     cursor = connection.execute(
                         f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}_view`"
                     )
                     prod_count = cursor.fetchone()[0]
                     cursor.close()
                     table_result['prod_count'] = prod_count
-                except:
-                    pass  # View doesn't exist
-                
-                # Check prod table if exists
-                try:
-                    cursor = connection.execute(
-                        f"SELECT COUNT(*) FROM `{database_name}`.`{table_name}`"
-                    )
-                    prod_table_count = cursor.fetchone()[0]
-                    cursor.close()
-                    table_result['prod_table_count'] = prod_table_count
-                except:
-                    pass  # Table doesn't exist
-                    
-            except Exception as e:
-                logger.error(f"Failed to validate {table_name}: {e}")
-                table_result['error'] = str(e)
+            except:
+                pass  # View doesn't exist or error - not critical
             
             validation_result['tables'].append(table_result)
             validation_result['tables_checked'] += 1
     
-    logger.info(f"Validation complete: {validation_result['tables_with_data']}/{validation_result['tables_checked']} tables have data")
+    # Summary logging
+    if check_staging and check_prod:
+        logger.info(f"Validation complete: {validation_result['tables_with_data']}/{validation_result['tables_checked']} tables have data")
+        logger.info(f"Total staging rows: {validation_result['total_staging_rows']:,}")
+        logger.info(f"Total production rows: {validation_result['total_prod_rows']:,}")
+    elif check_staging:
+        logger.info(f"Staging validation complete: {validation_result['tables_with_data']}/{validation_result['tables_checked']} tables have data")
+        logger.info(f"Total staging rows: {validation_result['total_staging_rows']:,}")
+    elif check_prod:
+        logger.info(f"Production validation complete: {validation_result['tables_with_data']}/{validation_result['tables_checked']} tables have data")
+        logger.info(f"Total production rows: {validation_result['total_prod_rows']:,}")
+    
     return validation_result
 
 
@@ -1072,6 +1154,15 @@ def _print_installation_summary(stats: Dict[str, Any]):
     if stats.get('cleanup'):
         logger.info(f"Staging tables dropped: {stats['cleanup']['staging_dropped']}")
         logger.info(f"Views dropped: {stats['cleanup']['clean_views_dropped'] + stats['cleanup']['prod_views_dropped']}")
+    
+    if stats.get('validation'):
+        val = stats['validation']
+        logger.info(f"Tables validated: {val['tables_checked']}")
+        logger.info(f"Tables with data: {val['tables_with_data']}")
+        if val['total_staging_rows'] > 0:
+            logger.info(f"Total staging rows: {val['total_staging_rows']:,}")
+        if val['total_prod_rows'] > 0:
+            logger.info(f"Total production rows: {val['total_prod_rows']:,}")
     
     logger.info(f"Total errors: {stats['total_errors']}")
     
