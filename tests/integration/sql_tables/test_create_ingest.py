@@ -360,7 +360,7 @@ def test_create_ingest_tables(
             "instance_date",
             1475500,
             date(1970, 1, 1),
-            date(2060, 1, 1),
+            date(2025, 6, 12),
         ),
     ],
 )
@@ -561,7 +561,7 @@ def test_clean_views(
             "instance_date",
             1475500,
             date(1970, 1, 1),
-            date(2060, 1, 1),
+            date(2025, 6, 12),
         ),
     ],
 )
