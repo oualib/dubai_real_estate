@@ -14,7 +14,7 @@ SELECT
     land_number,
     land_sub_number,
     MAP_LAND_TYPE_EN(land_type_id) AS land_type_english,
-     MAP_LAND_TYPE_AR(land_type_id) AS land_type_arabic,
+    MAP_LAND_TYPE_AR(land_type_id) AS land_type_arabic,
     master_project_id,
     project_id,
     MAP_PROPERTY_SUB_TYPE_EN(property_sub_type_id) AS property_sub_type_english,

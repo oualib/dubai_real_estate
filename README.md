@@ -165,9 +165,9 @@ print(f"📊 Total records: {result.get('validation', {}).get('total_staging_row
 ## 🎓 Examples
 
 Check out these example notebooks to get started:
-- **[Quick Start with SQL Magic](examples/sql-magic-quickstart.ipynb)** - Install and query data in 15 minutes
+- **[Quick Start with SQL Magic](examples/sql_magic_notebook.ipynb)** - Install and query data in 15 minutes
 
-- **[ClickHouse MCP Setup](examples/clickhouse-mcp-setup.ipynb)** - Prepare data for ClickHouse MCP integration
+- **[ClickHouse MCP Setup](examples/clickhouse_mcp_notebook.ipynb)** - Prepare data for ClickHouse MCP integration
 
 ## 🏗️ Advanced Usage
 

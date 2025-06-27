@@ -5,7 +5,8 @@ SELECT
     transaction_id,
     MAP_TRANS_GROUP_EN(trans_group_id) AS trans_group_type_english,
     MAP_TRANS_GROUP_AR(trans_group_id) AS trans_group_type_arabic,
-    procedure_id,
+    MAP_PROCEDURE_EN(procedure_id) AS procedure_type_english,
+    MAP_PROCEDURE_AR(procedure_id) AS procedure_type_arabic,
     instance_date,
     MAP_AREA_NAME_EN(area_id) AS area_name_english,
     MAP_AREA_NAME_AR(area_id) AS area_name_arabic,
@@ -31,7 +32,8 @@ SELECT
     no_of_parties_role_2,
     no_of_parties_role_3,
     has_parking,
-    rooms_id,
+    MAP_ROOMS_EN(rooms_id) AS rooms_type_english,
+    MAP_ROOMS_AR(rooms_id) AS rooms_type_arabic,
     procedure_area,
     actual_worth
-FROM "{dld_database}"."{dld_table}_staging_clean"
+FROM "{dld_database}"."{dld_table}_staging_clean";
