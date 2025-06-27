@@ -30,7 +30,8 @@ CREATE OR REPLACE TABLE
         "no_of_parties_role_2" Nullable(Int128),
         "no_of_parties_role_3" Nullable(Int128),
         "has_parking" Nullable(Bool),
-        "rooms_id" Nullable(UInt16),
+        "rooms_type_english" Nullable(String),
+        "rooms_type_arabic" Nullable(String),
         "procedure_area" Nullable(Float32),
         "actual_worth" Nullable(Float32)
 	) 

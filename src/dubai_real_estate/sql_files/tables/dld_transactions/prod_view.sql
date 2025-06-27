@@ -32,7 +32,8 @@ SELECT
     no_of_parties_role_2,
     no_of_parties_role_3,
     has_parking,
-    rooms_id,
+    MAP_ROOMS_EN(rooms_id) AS rooms_type_english,
+    MAP_ROOMS_AR(rooms_id) AS rooms_type_arabic,
     procedure_area,
     actual_worth
-FROM "{dld_database}"."{dld_table}_staging_clean"
+FROM "{dld_database}"."{dld_table}_staging_clean";
