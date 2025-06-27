@@ -5,24 +5,40 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dubai_real_estate"
 version = "0.1.0"
-description = "A Python library for analyzing Dubai real estate data using ClickHouse and AI-powered insights."
+description = "A comprehensive Python package for working with Dubai real estate data from Dubai Land Department (DLD) through ClickHouse, with beautiful SQL magic commands for Jupyter notebooks."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [
-    {name = "Badr Ouali", email = "badr@clickhouse.com"}
+    {name = "Badr Ouali", email = "badr.ouali@outlook.fr"}
+]
+maintainers = [
+    {name = "Badr Ouali", email = "badr.ouali@outlook.fr"}
 ]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: SQL",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+requires-python = ">=3.12"
 dependencies = [
     "requests>=2.25.0",
     "clickhouse-connect>=0.6.0",
     "chdb>=1.0.0",
     "cryptography>=3.4.0",
+    "pandas>=1.5.0",
+    "pathlib",
 ]
 
 [project.optional-dependencies]
@@ -32,11 +48,25 @@ dev = [
     "flake8>=6.0",
     "black",
     "isort",
+    "mypy",
+    "pre-commit",
+]
+jupyter = [
+    "IPython>=7.0.0",
+    "jupyter>=1.0.0",
+    "notebook>=6.0.0",
+    "ipywidgets>=7.0.0",
+]
+full = [
+    "dubai_real_estate[dev,jupyter]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/ClickHouse/dubai_real_estate"
-Repository = "https://github.com/ClickHouse/dubai_real_estate"
+Homepage = "https://github.com/oualib/dubai_real_estate"
+Repository = "https://github.com/oualib/dubai_real_estate"
+Documentation = "https://github.com/oualib/dubai_real_estate"
+"Bug Tracker" = "https://github.com/oualib/dubai_real_estate/issues"
+Changelog = "https://github.com/oualib/dubai_real_estate/releases"
 
 # [tool.setuptools_scm]
 # write_to = "src/dubai_real_estate/_version.py"
