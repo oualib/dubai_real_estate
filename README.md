@@ -64,11 +64,8 @@ create_connection(
 ```python
 from dubai_real_estate.install import install_database
 
-# Complete installation (staging + production tables)
+# Complete installation (only production tables)
 result = install_database()
-
-# Development installation (staging only) 
-result = install_database(include_prod_tables=False)
 ```
 
 ### 4. Query with SQL Magic
