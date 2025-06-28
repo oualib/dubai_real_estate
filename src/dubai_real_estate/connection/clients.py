@@ -500,7 +500,10 @@ class ClientConnection(BaseConnection):
             ... )
         """
         if not self._connected or not self._client:
-            raise ConnectionError("Not connected to ClickHouse")
+            try:
+                self.connect()
+            except ConnectionError:
+                raise ConnectionError("Not connected to ClickHouse")
 
         try:
             # Use clickhouse_connect query method
@@ -532,7 +535,10 @@ class ClientConnection(BaseConnection):
             >>> conn.command("CREATE DATABASE IF NOT EXISTS test")
         """
         if not self._connected or not self._client:
-            raise ConnectionError("Not connected to ClickHouse")
+            try:
+                self.connect()
+            except ConnectionError:
+                raise ConnectionError("Not connected to ClickHouse")
 
         try:
             return self._client.command(cmd)
