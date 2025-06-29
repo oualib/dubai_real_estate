@@ -1232,7 +1232,6 @@ class SQLMagic(Magics):
     def _show_connections_list(self, manager):
         """Show list of available connections."""
         connections = manager.list_connections()
-        auto_connection = manager._storage.get_auto_connection()
 
         html = f"""
         <div class="clickhouse-container">

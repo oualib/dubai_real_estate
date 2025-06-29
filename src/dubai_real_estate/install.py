@@ -351,6 +351,7 @@ def install_tables(
 
                 # Retry multiple times as ingestion may be interrupted
                 # by HTTP connection timeouts
+                tentative = 0
                 while tentative < MAX_RETRY:
                     result = _execute_sql(
                         connection,
