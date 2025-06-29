@@ -101,8 +101,9 @@ class ConnectionManager:
         logger.info(f"Created {connection_type} connection '{name}'")
 
         try:
-            # trying to connect if possible
-            connection.connect()
+            if not (connection.is_connected()):
+                # trying to connect if possible
+                connection.connect()
         except:
             pass
 

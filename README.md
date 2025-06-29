@@ -43,6 +43,7 @@ create_connection(
     port=8443,
     username="default", 
     password="your-password",
+    database="dubai_real_estate", # Default name. Replace with your Dubai database name if you've changed it
     secure=True,
     set_auto=True
 )
@@ -55,6 +56,7 @@ create_connection(
     port=8123,
     username="default", 
     password="",
+    database="dubai_real_estate", # Default name. Replace with your Dubai database name if you've changed it
     set_auto=True
 )
 ```
@@ -181,7 +183,7 @@ create_connection("prod", "client", host="prod-db.com")
 # Use specific connection
 conn = get_connection("prod")
 with conn:
-    result = conn.execute("SELECT COUNT(*) FROM dubai_real_estate.dld_transactions")
+    result = conn.execute("SELECT COUNT(*) FROM dld_transactions")
 ```
 
 ### Selective Installation
