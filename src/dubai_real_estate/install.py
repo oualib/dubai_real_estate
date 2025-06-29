@@ -90,6 +90,10 @@ TABLE_VARIABLES = {
     "projects": "dld_projects",
 }
 
+# Maximum number of retries for data ingestion
+# (sensitive to HTTP connection timeouts)
+MAX_RETRY = 20
+
 
 class InstallationError(Exception):
     """Raised when installation fails."""
@@ -345,9 +349,22 @@ def install_tables(
                     dld_database=database_name, dld_table=table_name
                 )
 
-                if _execute_sql(
-                    connection, formatted_sql, f"Ingest data into {table_name}", dry_run
-                ):
+                # Retry multiple times as ingestion may be interrupted
+                # by HTTP connection timeouts
+                tentative = 0
+                while tentative < MAX_RETRY:
+                    result = _execute_sql(
+                        connection,
+                        formatted_sql,
+                        f"Ingest data into {table_name}",
+                        dry_run,
+                    )
+                    if result:
+                        tentative = MAX_RETRY
+                    else:
+                        tentative += 1
+
+                if result:
                     stats["tables_ingested"] += 1
                     table_stats["ingested"] = True
                 else:

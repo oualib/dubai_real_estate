@@ -152,8 +152,10 @@ class CHDBConnection(BaseConnection):
             # Create connection using chdb.connect()
             self._connection = chdb.connect(self.credentials.database_path)
 
-            # Test connection with a simple query - don't use cursor yet
-            test_result = chdb.query("SELECT 1", output_format="JSON")
+            # Test connection with a simple query
+            test_cursor = self._connection.cursor()
+            test_cursor.execute("SELECT 1")
+            test_result = test_cursor.fetchone()
             if not test_result:
                 raise Exception("Connection test failed")
 
@@ -175,7 +177,7 @@ class CHDBConnection(BaseConnection):
         Example:
             >>> conn.disconnect()
         """
-        if self._connection:
+        if self.is_connected():
             try:
                 self._connection.close()
             except:
@@ -206,8 +208,11 @@ class CHDBConnection(BaseConnection):
             >>> print(cursor.fetchone())  # (0,)
             >>> cursor.close()
         """
-        if not self._connected or not self._connection:
-            raise ConnectionError("Not connected to CHDB")
+        if not (self.is_connected()):
+            try:
+                self.connect()
+            except Exception as e:
+                raise ConnectionError(f"Not connected to CHDB: {e}")
 
         try:
             if parameters:
@@ -458,7 +463,7 @@ class ClientConnection(BaseConnection):
             >>> conn.disconnect()
             >>> print("ClickHouse client disconnected")
         """
-        if self._client:
+        if self.is_connected():
             try:
                 self._client.close()
             except:
@@ -499,8 +504,11 @@ class ClientConnection(BaseConnection):
             ...     parameters={'age': 25}
             ... )
         """
-        if not self._connected or not self._client:
-            raise ConnectionError("Not connected to ClickHouse")
+        if not (self.is_connected()):
+            try:
+                self.connect()
+            except Exception as e:
+                raise ConnectionError(f"Not connected to ClickHouse: {e}")
 
         try:
             # Use clickhouse_connect query method
@@ -531,8 +539,11 @@ class ClientConnection(BaseConnection):
             >>>
             >>> conn.command("CREATE DATABASE IF NOT EXISTS test")
         """
-        if not self._connected or not self._client:
-            raise ConnectionError("Not connected to ClickHouse")
+        if not (self.is_connected()):
+            try:
+                self.connect()
+            except Exception as e:
+                raise ConnectionError(f"Not connected to ClickHouse: {e}")
 
         try:
             return self._client.command(cmd)
@@ -572,8 +583,11 @@ class ClientConnection(BaseConnection):
         Example:
             >>> print(conn.server_version)  # '22.10.1.98'
         """
-        if not self._connected or not self._client:
-            raise ConnectionError("Not connected to ClickHouse")
+        if not (self.is_connected()):
+            try:
+                self.connect()
+            except Exception as e:
+                raise ConnectionError(f"Not connected to ClickHouse: {e}")
 
         return self._client.server_version
 

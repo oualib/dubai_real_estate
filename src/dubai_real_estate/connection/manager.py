@@ -99,6 +99,14 @@ class ConnectionManager:
         self._connection_cache[name] = connection
 
         logger.info(f"Created {connection_type} connection '{name}'")
+
+        try:
+            if not (connection.is_connected()):
+                # trying to connect if possible
+                connection.connect()
+        except:
+            pass
+
         return connection
 
     def get_connection(self, name: Optional[str] = None) -> Optional[BaseConnection]:

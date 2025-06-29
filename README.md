@@ -43,6 +43,7 @@ create_connection(
     port=8443,
     username="default", 
     password="your-password",
+    database="dubai_real_estate", # Default name. Replace with your Dubai database name if you've changed it
     secure=True,
     set_auto=True
 )
@@ -55,6 +56,7 @@ create_connection(
     port=8123,
     username="default", 
     password="",
+    database="dubai_real_estate", # Default name. Replace with your Dubai database name if you've changed it
     set_auto=True
 )
 ```
@@ -64,11 +66,8 @@ create_connection(
 ```python
 from dubai_real_estate.install import install_database
 
-# Complete installation (staging + production tables)
+# Complete installation (only production tables)
 result = install_database()
-
-# Development installation (staging only) 
-result = install_database(include_prod_tables=False)
 ```
 
 ### 4. Query with SQL Magic
@@ -76,6 +75,9 @@ result = install_database(include_prod_tables=False)
 ```python
 # Load the magic extension in Jupyter
 %load_ext dubai_real_estate.sql
+
+# Use Registered Connections
+%sql_connect cloud
 
 # Start querying the real data!
 %sql SELECT COUNT(*) as total_transactions FROM dld_transactions
@@ -181,7 +183,7 @@ create_connection("prod", "client", host="prod-db.com")
 # Use specific connection
 conn = get_connection("prod")
 with conn:
-    result = conn.execute("SELECT COUNT(*) FROM dubai_real_estate.dld_transactions")
+    result = conn.execute("SELECT COUNT(*) FROM dld_transactions")
 ```
 
 ### Selective Installation
