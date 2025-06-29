@@ -83,6 +83,7 @@ class SQLMagic(Magics):
             </div>
             <div style="color: #333; font-size: 14px; line-height: 1.5;">
                 <strong>Available commands:</strong><br>
+                🔌 <code>%sql_connect</code> - Manage ClickHouse Connections<br>
                 📊 <code>%sql SELECT * FROM table LIMIT 5</code> - Execute SQL query<br>
                 📝 <code>%%sql</code> - Execute multiple SQL queries (cell mode)<br>
                 ⚙️ <code>%sql_config</code> - Configure settings<br>
@@ -991,6 +992,334 @@ class SQLMagic(Magics):
             sql, type("Args", (), {"minimal": False, "limit": None, "cache": False})()
         )
 
+    @line_magic
+    def sql_connect(self, line):
+        """
+        Connect to a ClickHouse connection by name or manage connections.
+
+        Usage:
+            %sql_connect                    # Show current connection and available connections
+            %sql_connect <connection_name>  # Connect to specific connection
+            %sql_connect -l                 # List all available connections
+            %sql_connect -s <name>          # Set connection as auto connection
+            %sql_connect -d <name>          # Disconnect from specific connection
+            %sql_connect -r                 # Reconnect current connection
+
+        Examples:
+            %sql_connect prod               # Connect to 'prod' connection
+            %sql_connect cloud_staging      # Connect to 'cloud_staging' connection
+            %sql_connect -l                 # List all connections
+            %sql_connect -s prod            # Set 'prod' as auto connection
+        """
+        args = line.strip().split() if line.strip() else []
+
+        # Get the connection manager
+        try:
+            from ..connection import get_manager
+
+            manager = get_manager()
+        except ImportError:
+            from dubai_real_estate.connection import get_manager
+
+            manager = get_manager()
+
+        # No arguments - show current connection status
+        if not args:
+            self._show_connection_status(manager)
+            return
+
+        # Parse arguments
+        if args[0] == "-l" or args[0] == "--list":
+            self._show_connections_list(manager)
+            return
+
+        elif args[0] == "-s" or args[0] == "--set-auto":
+            if len(args) < 2:
+                display(
+                    HTML(
+                        '<div style="color: #c53030; padding: 10px;">Error: Connection name required for -s option</div>'
+                    )
+                )
+                return
+            connection_name = args[1]
+            success = manager.set_auto_connection(connection_name)
+            if success:
+                display(
+                    HTML(
+                        f'<div style="color: #22543d; padding: 10px;">✓ Set "{connection_name}" as auto connection</div>'
+                    )
+                )
+            else:
+                display(
+                    HTML(
+                        f'<div style="color: #c53030; padding: 10px;">✗ Failed to set "{connection_name}" as auto connection</div>'
+                    )
+                )
+            return
+
+        elif args[0] == "-d" or args[0] == "--disconnect":
+            if len(args) < 2:
+                # Disconnect current connection
+                if self.connection and self.connection.is_connected():
+                    self.connection.disconnect()
+                    display(
+                        HTML(
+                            '<div style="color: #22543d; padding: 10px;">✓ Disconnected from current connection</div>'
+                        )
+                    )
+                else:
+                    display(
+                        HTML(
+                            '<div style="color: #666; padding: 10px;">No active connection to disconnect</div>'
+                        )
+                    )
+            else:
+                connection_name = args[1]
+                connection = manager.get_connection(connection_name)
+                if connection and connection.is_connected():
+                    connection.disconnect()
+                    display(
+                        HTML(
+                            f'<div style="color: #22543d; padding: 10px;">✓ Disconnected from "{connection_name}"</div>'
+                        )
+                    )
+                else:
+                    display(
+                        HTML(
+                            f'<div style="color: #666; padding: 10px;">Connection "{connection_name}" is not active</div>'
+                        )
+                    )
+            return
+
+        elif args[0] == "-r" or args[0] == "--reconnect":
+            if self.connection:
+                try:
+                    if self.connection.is_connected():
+                        self.connection.disconnect()
+                    self.connection.connect()
+                    display(
+                        HTML(
+                            '<div style="color: #22543d; padding: 10px;">✓ Reconnected successfully</div>'
+                        )
+                    )
+                except Exception as e:
+                    display(
+                        HTML(
+                            f'<div style="color: #c53030; padding: 10px;">✗ Reconnection failed: {str(e)}</div>'
+                        )
+                    )
+            else:
+                display(
+                    HTML(
+                        '<div style="color: #666; padding: 10px;">No connection to reconnect</div>'
+                    )
+                )
+            return
+
+        # Connect to specific connection
+        connection_name = args[0]
+
+        try:
+            # Get the connection
+            connection = manager.get_connection(connection_name)
+
+            if connection is None:
+                display(
+                    HTML(
+                        f'<div style="color: #c53030; padding: 10px;">✗ Connection "{connection_name}" not found</div>'
+                    )
+                )
+                self._show_connections_list(manager)
+                return
+
+            # Disconnect current connection if different
+            if (
+                self.connection
+                and self.connection != connection
+                and self.connection.is_connected()
+            ):
+                self.connection.disconnect()
+
+            # Connect to the new connection
+            if not connection.is_connected():
+                connection.connect()
+
+            # Set as current connection
+            self.connection = connection
+
+            # Show success message with connection details
+            self._show_connection_success(connection)
+
+        except Exception as e:
+            error_html = f"""
+            <div class="clickhouse-error">
+                <div class="clickhouse-error-header">
+                    ❌ Connection Error
+                </div>
+                <div class="clickhouse-error-message">Failed to connect to "{connection_name}": {str(e)}</div>
+            </div>
+            """
+            display(HTML(error_html))
+
+    def _show_connection_status(self, manager):
+        """Show current connection status and available connections."""
+        current_connection = self.connection
+        auto_connection = manager._storage.get_auto_connection()
+
+        html = f"""
+        <div class="clickhouse-container">
+            <div class="clickhouse-header">
+                {self._create_clickhouse_logo_svg()}
+                🔗 Connection Status
+            </div>
+            <div class="clickhouse-content" style="padding: 20px;">
+        """
+
+        # Current connection info
+        if current_connection:
+            conn_status = (
+                "🟢 Connected"
+                if current_connection.is_connected()
+                else "🔴 Disconnected"
+            )
+            conn_type = current_connection.credentials.connection_type.value.upper()
+
+            html += f"""
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2d3748;">Current Connection</h4>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #FFD700;">
+                        <strong>{current_connection.credentials.name}</strong> ({conn_type}) {conn_status}<br>
+                        <small style="color: #666;">{current_connection.credentials.description or 'No description'}</small>
+                    </div>
+                </div>
+            """
+        else:
+            html += """
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2d3748;">Current Connection</h4>
+                    <div style="background: #fff5f5; padding: 12px; border-radius: 6px; border-left: 4px solid #c53030;">
+                        <em>No active connection</em>
+                    </div>
+                </div>
+            """
+
+        # Auto connection info
+        html += f"""
+            <div style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: #2d3748;">Auto Connection</h4>
+                <div style="background: #f0fff4; padding: 12px; border-radius: 6px; border-left: 4px solid #38a169;">
+                    {auto_connection or '<em>No auto connection set</em>'}
+                </div>
+            </div>
+        """
+
+        # Quick commands
+        html += """
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: #2d3748;">Quick Commands</h4>
+                <div style="background: #fffbeb; padding: 12px; border-radius: 6px; border-left: 4px solid #FFA500;">
+                    <code>%sql_connect -l</code> - List all connections<br>
+                    <code>%sql_connect &lt;name&gt;</code> - Connect to specific connection<br>
+                    <code>%sql_connect -s &lt;name&gt;</code> - Set auto connection<br>
+                    <code>%sql_connect -r</code> - Reconnect current connection
+                </div>
+            </div>
+        """
+
+        html += "</div></div>"
+        display(HTML(html))
+
+    def _show_connections_list(self, manager):
+        """Show list of available connections."""
+        connections = manager.list_connections()
+        auto_connection = manager._storage.get_auto_connection()
+
+        html = f"""
+        <div class="clickhouse-container">
+            <div class="clickhouse-header">
+                {self._create_clickhouse_logo_svg()}
+                📋 Available Connections
+            </div>
+            <div class="clickhouse-content">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Name</th>
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Type</th>
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Status</th>
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Auto</th>
+                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        """
+
+        if not connections:
+            html += """
+                        <tr>
+                            <td colspan="5" style="padding: 20px; text-align: center; color: #666; font-style: italic;">
+                                No connections available
+                            </td>
+                        </tr>
+            """
+        else:
+            for conn in connections:
+                status_icon = "🟢" if conn["is_connected"] else "🔴"
+                auto_icon = "⭐" if conn["is_auto"] else ""
+
+                html += f"""
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 10px 12px;"><strong>{conn['name']}</strong></td>
+                            <td style="padding: 10px 12px;"><code>{conn['type']}</code></td>
+                            <td style="padding: 10px 12px;">{status_icon}</td>
+                            <td style="padding: 10px 12px;">{auto_icon}</td>
+                            <td style="padding: 10px 12px; color: #666;"><em>{conn['description'] or 'No description'}</em></td>
+                        </tr>
+                """
+
+        html += """
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        """
+
+        display(HTML(html))
+
+    def _show_connection_success(self, connection):
+        """Show successful connection message with details."""
+        conn_type = connection.credentials.connection_type.value.upper()
+
+        # Get connection-specific details
+        if hasattr(connection.credentials, "host"):
+            detail = f"{connection.credentials.host}:{connection.credentials.port}"
+        else:
+            detail = f"Database: {connection.credentials.database_path}"
+
+        html = f"""
+        <div class="clickhouse-container">
+            <div class="clickhouse-header">
+                {self._create_clickhouse_logo_svg()}
+                ✅ Connected Successfully
+            </div>
+            <div class="clickhouse-content" style="padding: 20px;">
+                <div style="background: #f0fff4; padding: 16px; border-radius: 6px; border-left: 4px solid #38a169;">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                        {connection.credentials.name} ({conn_type})
+                    </div>
+                    <div style="color: #666; margin-bottom: 8px;">
+                        {detail}
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        {connection.credentials.description or 'No description'}
+                    </div>
+                </div>
+            </div>
+        </div>
+        """
+
+        display(HTML(html))
+
 
 def load_ipython_extension(ipython):
     """Load the SQL magic extension."""
@@ -999,6 +1328,7 @@ def load_ipython_extension(ipython):
     ipython.register_magic_function(magic_instance.sql_config, "line", "sql_config")
     ipython.register_magic_function(magic_instance.sql_history, "line", "sql_history")
     ipython.register_magic_function(magic_instance.sql_tables, "line", "sql_tables")
+    ipython.register_magic_function(magic_instance.sql_connect, "line", "sql_connect")
 
 
 def unload_ipython_extension(ipython):
@@ -1013,6 +1343,6 @@ def unload_ipython_extension(ipython):
             del magic_manager.magics["cell"]["sql"]
 
         # Remove line magics
-        for magic_name in ["sql_config", "sql_history", "sql_tables"]:
+        for magic_name in ["sql_config", "sql_history", "sql_tables", "sql_connect"]:
             if magic_name in magic_manager.magics.get("line", {}):
                 del magic_manager.magics["line"][magic_name]

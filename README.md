@@ -74,6 +74,9 @@ result = install_database()
 # Load the magic extension in Jupyter
 %load_ext dubai_real_estate.sql
 
+# Use Registered Connections
+%sql_connect cloud
+
 # Start querying the real data!
 %sql SELECT COUNT(*) as total_transactions FROM dld_transactions
 # Result: +1,475,500 transactions
