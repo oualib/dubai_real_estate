@@ -20,7 +20,7 @@ CREATE OR REPLACE TABLE
         "is_free_hold" Nullable(UInt8) COMMENT '[BOOL] Ownership type (1=freehold, 0=leasehold) - affects foreign ownership eligibility',
         "is_registered" Nullable(UInt8) COMMENT '[BOOL] Registration status (1=registered, 0=pending)',
         "pre_registration_number" Array(String) COMMENT '[ARRAY] List of pre-registration reference numbers (ClickHouse Array type)',
-        "actual_area" Nullable(Float64) COMMENT '[UNIT:sqft] Measured land area in square feet'
+        "actual_area_sqm" Nullable(Float64) COMMENT '[UNIT:sqm] Measured land area in square meter by Dubai Municipality'
 ) 
 ENGINE = MergeTree()
 PRIMARY KEY("creation_date")

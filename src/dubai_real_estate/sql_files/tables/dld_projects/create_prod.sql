@@ -2,7 +2,7 @@ CREATE OR REPLACE TABLE
 "{dld_database}"."{dld_table}"(
         "area_name_english" Nullable(String) COMMENT '[GEO] Geographic area where project is located',
         "area_name_arabic" Nullable(String) COMMENT '[GEO] Geographic area in Arabic',
-        "land_property_number" Nullable(Int128) COMMENT '[REF] Land property number where project is built',
+        "land_property_number" Nullable(Int128) COMMENT '[REF→dld_land_registry.land_property_number] Land property number where project is built',
         "zoning_authority_name_english" Nullable(String) COMMENT '[REF] Zoning authority responsible for the area (DEWA, Municipality, etc.)',
         "zoning_authority_name_arabic" Nullable(String) COMMENT '[REF] Zoning authority name in Arabic',
         "master_developer_number" Nullable(Int128) COMMENT '[FK] Master developer company identifier (for large communities)',

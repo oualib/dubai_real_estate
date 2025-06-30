@@ -13,10 +13,10 @@ CREATE OR REPLACE TABLE
         "unit_parking_number" Nullable(String) COMMENT '[REF] Assigned parking space number for unit (specific bay allocation)',
         "parking_allocation_type_english" Nullable(String) COMMENT '[ENUM] Type of parking allocation: EU (Exclusive Use), Title (Owned) - affects unit value',
         "parking_allocation_type_arabic" Nullable(String) COMMENT '[ENUM] Type of parking allocation in Arabic',
-        "actual_area" Nullable(Float32) COMMENT '[UNIT:sqft] Unit interior area in square feet (carpet area)',
-        "common_area" Nullable(Float32) COMMENT '[UNIT:sqft] Allocated share of common area in square feet',
-        "actual_common_area" Nullable(Float32) COMMENT '[UNIT:sqft] Measured share of common area in square feet',
-        "unit_balcony_area" Nullable(Float32) COMMENT '[UNIT:sqft] Balcony/terrace area in square feet - outdoor space premium'
+        "actual_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Unit interior area in square meter (carpet area)',
+        "common_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Allocated share of common area in square meter',
+        "actual_common_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Measured share of common area in square meter',
+        "unit_balcony_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Balcony/terrace area in square meter - outdoor space premium'
 ) 
 ENGINE = MergeTree()
 PRIMARY KEY("creation_date")

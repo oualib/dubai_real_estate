@@ -8,12 +8,12 @@ CREATE OR REPLACE TABLE
         "usage_type_arabic" Nullable(String) COMMENT '[ENUM] Property usage type in Arabic',
         "service_category_type_english" Nullable(String) COMMENT '[ENUM] Service category: Services|Maintenance|Management|Utilities|Reserved Fund|Insurance|Master Community|Improvement',
         "service_category_type_arabic" Nullable(String) COMMENT '[ENUM] Service category in Arabic',
-        "service_cost" Nullable(Int128) COMMENT '[CURRENCY:AED] Annual service charge amount in AED per sqft - varies by category and usage type',
+        "service_cost_sqft" Nullable(Int128) COMMENT '[CURRENCY:AED] Annual service charge amount in AED per sqft - varies by category and usage type',
         "property_group_name_english" Nullable(String) COMMENT '[REF] Property group classification within community',
         "property_group_name_arabic" Nullable(String) COMMENT '[REF] Property group classification in Arabic',
-        "management_company_name_english" Nullable(String) COMMENT '[REF] Management company handling services',
+        "management_company_name_english" Nullable(String) COMMENT '[REF→dld_licenced_owner_associations.company_name_english] Management company handling services',
         "management_company_name_arabic" Nullable(String) COMMENT '[REF] Management company name in Arabic'
 ) 
 ENGINE = MergeTree()
 PRIMARY KEY("budget_year")
-COMMENT 'Owner association service charges and community fees by category and usage type';
+COMMENT 'Owner association service charges and community fees are categorized by usage type. Most fees are calculated per square foot, while others represent a flat cost for each owner. When computing service fees, its necessary to filter out amounts that are significantly larger compared to the rest in order to calculate the service fees per square foot, and then add them back into the final calculation.';
