@@ -8,7 +8,7 @@ CREATE OR REPLACE TABLE
         "usage_type_arabic" Nullable(String) COMMENT '[ENUM] Property usage type in Arabic',
         "service_category_type_english" Nullable(String) COMMENT '[ENUM] Service category: Services|Maintenance|Management|Utilities|Reserved Fund|Insurance|Master Community|Improvement',
         "service_category_type_arabic" Nullable(String) COMMENT '[ENUM] Service category in Arabic',
-        "service_cost_sqft" Nullable(Int128) COMMENT '[CURRENCY:AED] Annual service charge amount in AED per sqft - varies by category and usage type. Don t forget to convert it to square meter (sqm) when using it with other tables.',
+        "service_cost_sqft" Nullable(Int128) COMMENT '[CURRENCY:AED] Annual service charge amount in AED per sqft - varies by category and usage type. Don t forget to convert it to per square meter (sqm) when using it with other tables.',
         "property_group_name_english" Nullable(String) COMMENT '[REF] Property group classification within community',
         "property_group_name_arabic" Nullable(String) COMMENT '[REF] Property group classification in Arabic',
         "management_company_name_english" Nullable(String) COMMENT '[REF→dld_licenced_owner_associations.company_name_english] Management company handling services',
