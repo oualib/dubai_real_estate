@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dubai_real_estate"
-version = "0.1.1"
+version = "0.1.2"
 description = "A comprehensive Python package for working with Dubai real estate data from Dubai Land Department (DLD) through ClickHouse, with beautiful SQL magic commands for Jupyter notebooks."
 readme = "README.md"
 license = {text = "Apache-2.0"}
