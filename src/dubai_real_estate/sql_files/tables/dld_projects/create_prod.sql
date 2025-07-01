@@ -27,11 +27,11 @@ CREATE OR REPLACE TABLE
         "completion_date" Nullable(Date) COMMENT '[DATE] Actual project completion date (for FINISHED projects)',
         "cancellation_date" Nullable(Date) COMMENT '[DATE] Project cancellation date (if applicable)',
         "percent_completed" Nullable(Int128) COMMENT '[PERCENT] Project completion percentage (0-100)',
-        "no_of_lands" Nullable(Int128) COMMENT '[COUNT] Number of land plots in project',
-        "no_of_buildings" Nullable(Int128) COMMENT '[COUNT] Total number of buildings planned',
-        "no_of_villas" Nullable(Int128) COMMENT '[COUNT] Number of villa units in project',
-        "no_of_units" Nullable(Int128) COMMENT '[COUNT] Total number of sellable units',
-        "project_description_english" Nullable(String) COMMENT '[TEXT] Detailed project description and features',
+        "no_of_lands" Nullable(Int128) COMMENT '[COUNT] Number of land plots in project - Can be recomputed using joins and aggregations',
+        "no_of_buildings" Nullable(Int128) COMMENT '[COUNT] Number of buildings in project - Can be recomputed using joins and aggregations',
+        "no_of_villas" Nullable(Int128) COMMENT '[COUNT] Number of villa in project - Can be recomputed using joins and aggregations',
+        "no_of_units" Nullable(Int128) COMMENT '[COUNT] Number of units in project - Can be recomputed using joins and aggregations',
+        "project_description_english" Nullable(String) COMMENT '[TEXT] Detailed project description in English',
         "project_description_arabic" Nullable(String) COMMENT '[TEXT] Detailed project description in Arabic'
 ) 
 ENGINE = MergeTree()
