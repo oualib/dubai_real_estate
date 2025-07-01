@@ -27,4 +27,11 @@ SELECT
 FROM url(
     'https://www.dubaipulse.gov.ae/dataset/00768c45-f014-4cc6-937d-2b17dcab53fb/resource/765b5a69-ca16-4bfd-9852-74612f3c4ea6/download/rent_contracts.csv',
     'CSVWithNames'
-);
+)
+SETTINGS 
+    input_format_allow_errors_num = 10000,
+    input_format_allow_errors_ratio = 0.01,
+    input_format_skip_unknown_fields = 1,
+    input_format_null_as_default = 1,
+    format_csv_allow_single_quotes = 1,
+    format_csv_allow_double_quotes = 1;

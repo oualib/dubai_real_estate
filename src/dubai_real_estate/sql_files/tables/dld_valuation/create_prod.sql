@@ -10,8 +10,8 @@ CREATE OR REPLACE TABLE
         "property_type_arabic" Nullable(String) COMMENT '[ENUM] Type of property valued in Arabic',
         "property_sub_type_english" Nullable(String) COMMENT '[ENUM] Detailed property subcategory for valuation',
         "property_sub_type_arabic" Nullable(String) COMMENT '[ENUM] Detailed property subcategory in Arabic',
-        "procedure_area" Nullable(Float32) COMMENT '[UNIT:sqft] Property area used in valuation calculation',
-        "actual_area" Nullable(Float32) COMMENT '[UNIT:sqft] Measured property area in square feet',
+        "procedure_area" Nullable(Float32) COMMENT '[UNIT:sqm] Property area used in valuation calculation',
+        "actual_area" Nullable(Float32) COMMENT '[UNIT:sqm] Measured property area in square meter',
         "property_total_value" Nullable(Float32) COMMENT '[CURRENCY:AED] Total assessed property value in AED',
         "actual_worth" Nullable(Float32) COMMENT '[CURRENCY:AED] Actual market worth assessment in AED - benchmark for market pricing'
 ) 

@@ -32,9 +32,9 @@ CREATE OR REPLACE TABLE
         "has_parking" Nullable(Bool) COMMENT '[BOOL] Indicates if property includes parking spaces (1=yes, 0=no) - critical for property valuation',
         "rooms_type_english" Nullable(String) COMMENT '[ENUM] Room configuration: Studio|1-9 B/R|Office|Shop|Single Room|Penthouse|Health club - matches market standards',
         "rooms_type_arabic" Nullable(String) COMMENT '[ENUM] Room configuration in Arabic',
-        "procedure_area" Nullable(Float32) COMMENT '[UNIT:sqft] Property area in square feet as per transaction documents',
+        "procedure_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Property area in square meter as per transaction documents',
         "actual_worth" Nullable(Float32) COMMENT '[CURRENCY:AED] Official transaction value in UAE Dirhams - key for market analysis'
 ) 
 ENGINE = MergeTree()
 PRIMARY KEY("transaction_id")
-COMMENT 'Official DLD property transaction records including sales, mortgages, and gifts';
+COMMENT 'Official DLD property transaction records include sales, mortgages, and gifts. When the transaction is a gift, the actual_worth column represents the property valuation by DLD. Mortgages are not necessarily linked to a sale - the actual_worth then represents the amount borrowed by the buyer/owner of the unit. Indeed, they can be the result of an equity release or other payment facilities. Also, when looking at transactions to evaluate the price of a unit, it is necessary to look at only sales and filter out the other types.';

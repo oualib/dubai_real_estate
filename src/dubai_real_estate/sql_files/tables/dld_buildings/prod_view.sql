@@ -19,8 +19,8 @@ SELECT
     offices,
     shops,
     flats,
-    built_up_area,
-    actual_area,
-    common_area,
-    actual_common_area
+    built_up_area AS built_up_area_sqm,
+    actual_area AS actual_area_sqm,
+    common_area AS common_area_sqm,
+    actual_common_area AS actual_common_area_sqm
 FROM "{dld_database}"."{dld_table}_staging_clean"

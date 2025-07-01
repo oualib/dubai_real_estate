@@ -28,7 +28,7 @@ CREATE OR REPLACE TABLE
         "no_of_prop" Nullable(Int128) COMMENT '[COUNT] Number of properties in the contract (typically 1 for individual leases)',
         "rooms_type_english" Nullable(String) COMMENT '[ENUM] Room config: 1-2 B/R most common, Office, Studio, Labor Camp, Warehouse, Shop, Restaurant, etc.',
         "rooms_type_arabic" Nullable(String) COMMENT '[ENUM] Room configuration in Arabic',
-        "actual_area" Nullable(Int128) COMMENT '[UNIT:sqft] Actual rental area in square feet',
+        "actual_area_sqm" Nullable(Int128) COMMENT '[UNIT:sqm] Actual rental area in square meter',
         "contract_amount" Nullable(Int128) COMMENT '[CURRENCY:AED] Total contract value in AED (may include multi-year amounts)',
         "annual_amount" Nullable(Int128) COMMENT '[CURRENCY:AED] Annual rental amount in AED - key metric for yield analysis'
 ) 

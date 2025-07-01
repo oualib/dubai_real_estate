@@ -30,7 +30,7 @@ SELECT
     no_of_prop,
     MAP_ROOMS_EN(rooms_id) AS rooms_type_english,
     MAP_ROOMS_AR(rooms_id) AS rooms_type_arabic,
-    actual_area,
+    actual_area AS actual_area_sqm,
     contract_amount,
     annual_amount
 FROM "{dld_database}"."{dld_table}_staging_clean"

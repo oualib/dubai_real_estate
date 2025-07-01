@@ -34,6 +34,6 @@ SELECT
     has_parking,
     MAP_ROOMS_EN(rooms_id) AS rooms_type_english,
     MAP_ROOMS_AR(rooms_id) AS rooms_type_arabic,
-    procedure_area,
+    procedure_area AS procedure_area_sqm,
     actual_worth
 FROM "{dld_database}"."{dld_table}_staging_clean";

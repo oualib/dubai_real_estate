@@ -17,10 +17,10 @@ CREATE OR REPLACE TABLE
         "offices" Nullable(Int128) COMMENT '[COUNT] Number of office units in building (mixed-use indicator)',
         "shops" Nullable(Int128) COMMENT '[COUNT] Number of retail/shop units in building (ground floor commercial)',
         "flats" Nullable(Int128) COMMENT '[COUNT] Number of residential apartment units',
-        "built_up_area" Nullable(Float32) COMMENT '[UNIT:sqft] Total built-up area of building in square feet (gross floor area)',
-        "actual_area" Nullable(Float32) COMMENT '[UNIT:sqft] Actual usable area in square feet (net floor area)',
-        "common_area" Nullable(Float32) COMMENT '[UNIT:sqft] Shared/common area in square feet (lobbies, corridors, amenities)',
-        "actual_common_area" Nullable(Int128) COMMENT '[UNIT:sqft] Actual measured common area in square feet'
+        "built_up_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Total built-up area of building in square meter (gross floor area)',
+        "actual_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Actual usable area in square meter (net floor area)',
+        "common_area_sqm" Nullable(Float32) COMMENT '[UNIT:sqm] Shared/common area in square meter (lobbies, corridors, amenities)',
+        "actual_common_area_sqm" Nullable(Int128) COMMENT '[UNIT:sqm] Actual measured common area in square meter'
 ) 
 ENGINE = MergeTree()
 PRIMARY KEY("creation_date")

@@ -29,4 +29,11 @@ SELECT
 FROM url(
     'https://www.dubaipulse.gov.ae/dataset/3b25a6f5-9077-49d7-8a1e-bc6d5dea88fd/resource/a37511b0-ea36-485d-bccd-2d6cb24507e7/download/transactions.csv',
     'CSVWithNames'
-);
+)
+SETTINGS 
+    input_format_allow_errors_num = 10000,
+    input_format_allow_errors_ratio = 0.01,
+    input_format_skip_unknown_fields = 1,
+    input_format_null_as_default = 1,
+    format_csv_allow_single_quotes = 1,
+    format_csv_allow_double_quotes = 1;

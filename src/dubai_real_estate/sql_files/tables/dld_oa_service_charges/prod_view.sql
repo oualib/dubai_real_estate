@@ -10,7 +10,7 @@ SELECT
     MAP_USAGE_AR(usage_id) AS usage_type_arabic,
     MAP_SERVICE_CATEGORY_EN(service_category_id) AS service_category_type_english,
     MAP_SERVICE_CATEGORY_AR(service_category_id) AS service_category_type_arabic,
-    service_cost,
+    service_cost AS service_cost_sqft,
     property_group_name_en AS property_group_name_english,
     property_group_name_ar AS property_group_name_arabic,
     management_company_name_en AS management_company_name_english,

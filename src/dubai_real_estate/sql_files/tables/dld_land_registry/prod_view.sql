@@ -22,5 +22,5 @@ SELECT
     is_free_hold,
     is_registered,
     pre_registration_number,
-    actual_area
+    actual_area AS actual_area_sqm
 FROM "{dld_database}"."{dld_table}_staging_clean"

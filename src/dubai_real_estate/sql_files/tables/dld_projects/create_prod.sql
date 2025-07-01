@@ -2,7 +2,7 @@ CREATE OR REPLACE TABLE
 "{dld_database}"."{dld_table}"(
         "area_name_english" Nullable(String) COMMENT '[GEO] Geographic area where project is located',
         "area_name_arabic" Nullable(String) COMMENT '[GEO] Geographic area in Arabic',
-        "land_property_number" Nullable(Int128) COMMENT '[REF] Land property number where project is built',
+        "land_property_number" Nullable(Int128) COMMENT '[REF→dld_land_registry.land_property_number] Land property number where project is built',
         "zoning_authority_name_english" Nullable(String) COMMENT '[REF] Zoning authority responsible for the area (DEWA, Municipality, etc.)',
         "zoning_authority_name_arabic" Nullable(String) COMMENT '[REF] Zoning authority name in Arabic',
         "master_developer_number" Nullable(Int128) COMMENT '[FK] Master developer company identifier (for large communities)',
@@ -27,11 +27,11 @@ CREATE OR REPLACE TABLE
         "completion_date" Nullable(Date) COMMENT '[DATE] Actual project completion date (for FINISHED projects)',
         "cancellation_date" Nullable(Date) COMMENT '[DATE] Project cancellation date (if applicable)',
         "percent_completed" Nullable(Int128) COMMENT '[PERCENT] Project completion percentage (0-100)',
-        "no_of_lands" Nullable(Int128) COMMENT '[COUNT] Number of land plots in project',
-        "no_of_buildings" Nullable(Int128) COMMENT '[COUNT] Total number of buildings planned',
-        "no_of_villas" Nullable(Int128) COMMENT '[COUNT] Number of villa units in project',
-        "no_of_units" Nullable(Int128) COMMENT '[COUNT] Total number of sellable units',
-        "project_description_english" Nullable(String) COMMENT '[TEXT] Detailed project description and features',
+        "no_of_lands" Nullable(Int128) COMMENT '[COUNT] Number of land plots in project - Can be recomputed using joins and aggregations',
+        "no_of_buildings" Nullable(Int128) COMMENT '[COUNT] Number of buildings in project - Can be recomputed using joins and aggregations',
+        "no_of_villas" Nullable(Int128) COMMENT '[COUNT] Number of villa in project - Can be recomputed using joins and aggregations',
+        "no_of_units" Nullable(Int128) COMMENT '[COUNT] Number of units in project - Can be recomputed using joins and aggregations',
+        "project_description_english" Nullable(String) COMMENT '[TEXT] Detailed project description in English',
         "project_description_arabic" Nullable(String) COMMENT '[TEXT] Detailed project description in Arabic'
 ) 
 ENGINE = MergeTree()
