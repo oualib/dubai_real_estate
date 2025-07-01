@@ -1683,8 +1683,8 @@ def test_tenant_type(clickhouse_connection: BaseConnection):
 
         # Test cases: (input, expected_en, expected_ar)
         test_cases = [
-            (1, "Person", "شخص"),
-            (2, "Authority", "جهة"),
+            (0, "Person", "شخص"),
+            (1, "Authority", "جهة"),
             (999, None, None),  # Unknown
         ]
 
